@@ -1,26 +1,26 @@
-package com.carrental.domain.service;
+package com.carrental.infrastructure.persistence;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.carrental.domain.model.car.AvailableCarList;
 import com.carrental.domain.model.car.Brand;
 import com.carrental.domain.model.car.Car;
+import com.carrental.domain.model.car.CarRepository;
 import com.carrental.domain.model.car.Category;
 import com.carrental.domain.model.car.LicensePlate;
 import com.carrental.domain.model.car.Model;
-import com.carrental.domain.model.car.Car.CarBuilder;
 import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.Country;
 
-// TODO: 
-public class SearchAvailableCarsSampleDataStore {
+public class CarRepositoryInMemory implements CarRepository {
 	
-	
-	public static List<Car> getCarList() {
+	public List<Car> getCarList() {
 		List<Car> cars = new ArrayList<>();
 		
-		Car availableGolf = new CarBuilder()
+		Car availableGolf = new Car.Builder()
 				.withModel(new Model(new Brand("VW"), "Golf", Category.MEDIUMSIZED))
 				.withPickupLocation(new City("Rotterdam", Country.NETHERLANDS))
 				.withPickupDateTime(LocalDateTime.of(2018, 07, 01, 8, 00))
@@ -31,27 +31,7 @@ public class SearchAvailableCarsSampleDataStore {
 				.build();
 		cars.add(availableGolf);
 		
-		/*
-		cars.add(new Car("VW", "Golf"));
-		cars.add(new Car("VW", "Jetta"));
-		cars.add(new Car("VW", "Passat"));
-		
-		cars.add(new Car("Ford", "Focus"));
-		cars.add(new Car("Ford", "Fusion"));
-		cars.add(new Car("Ford", "Mustang"));
-		
-		cars.add(new Car("Honda", "Civic"));
-		
-		cars.add(new Car("Citroen", "C3"));
-		cars.add(new Car("Citroen", "C4"));
-		
-		cars.add(new Car("Audi", "A1"));
-		cars.add(new Car("Audi", "A3"));
-		cars.add(new Car("Audi", "A4"));
-		cars.add(new Car("Audi", "A6"));
-		*/
-		
-		Car availableTesla = new CarBuilder()
+		Car availableTesla = new Car.Builder()
 				.withModel(new Model(new Brand("Tesla"), "Model S", Category.PREMIUM))
 				.withPickupLocation(new City("Rotterdam", Country.NETHERLANDS))
 				.withPickupDateTime(LocalDateTime.of(2018, 07, 02, 15, 00))
@@ -65,10 +45,31 @@ public class SearchAvailableCarsSampleDataStore {
 		return cars;
 	}
 
+	@Override
+	public AvailableCarList basedOn(City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation,
+			LocalDateTime dropoffDateTime) {
+		List<Car> cars = getCarList();
+		
+		// Returning a customized class instead of Collections.unmodifiableList to allow business methods to be added (e.g. findByModel)
+		List<Car> foundCars = cars.stream()
+			.filter((carAvailability) -> {
+			
+				boolean isAvailable = 
+						carAvailability.getPickupLocation().equals(pickupLocation) &&
+						carAvailability.getDropoffLocation().equals(pickupLocation) &&
+						carAvailability.getPickupDateTime().isBefore(pickupDateTime) &&
+						carAvailability.getDropoffDateTime().isAfter(dropoffDateTime);
+				
+				return isAvailable;
+			
+			}).collect(Collectors.toList());
+		
+		return new AvailableCarList(foundCars);
+	}
+	
+	
+
 }
-
-
-
 
 
 

@@ -1,13 +1,9 @@
 package com.carrental.domain.model.car;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 
 import com.carrental.domain.model.reservation.City;
-import com.carrental.domain.model.reservation.Reservation;
 import com.carrental.shared.Entity;
 
 /***
@@ -26,7 +22,6 @@ public class Car implements Entity {
 	private Double pricePerDay;
 	
 	private CarRentalStore store;
-	private List<Reservation> reservations = new ArrayList<>();
 	// TODO: Create possible list of dropoffs?
 	/* Create convenience methods to check if car can be reserved */
 	
@@ -78,10 +73,6 @@ public class Car implements Entity {
 		return dropoffDateTime;
 	}
 	
-	public Iterator<Reservation> getReservations() {
-		return reservations.iterator();
-	}
-	
 	public CarRentalStore getStore() {
 		return store;
 	}
@@ -118,9 +109,9 @@ public class Car implements Entity {
 	
 	
 	/***
-	 * Simple builder class to help creating a new Car Available
+	 * Builder class to help creating a new Car
 	 */
-	public static class CarBuilder {
+	public static class Builder {
 		private LicensePlate licensePlate;
 		private Model car;
 		private City pickupLocation;
@@ -130,37 +121,37 @@ public class Car implements Entity {
 		private Double pricePerDay;
 		
 		
-		public CarBuilder withModel(Model model) {
+		public Builder withModel(Model model) {
 			this.car = Objects.requireNonNull(model, "Model must not be null");
 			return this;
 		}
 		
-		public CarBuilder withPickupLocation(City pickupLocation) {
+		public Builder withPickupLocation(City pickupLocation) {
 			this.pickupLocation = Objects.requireNonNull(pickupLocation, "Pickup location must not be null");;
 			return this;
 		}
 		
-		public CarBuilder withPickupDateTime(LocalDateTime pickupDateTime) {
+		public Builder withPickupDateTime(LocalDateTime pickupDateTime) {
 			this.pickupDateTime = Objects.requireNonNull(pickupDateTime, "Pickup date/time must not be null");
 			return this;
 		}
 		
-		public CarBuilder withDropoffLocation(City dropoffLocation) {
+		public Builder withDropoffLocation(City dropoffLocation) {
 			this.dropoffLocation = Objects.requireNonNull(dropoffLocation, "Drop-off location must not be null");
 			return this;
 		}
 		
-		public CarBuilder withDropoffDateTime(LocalDateTime dropoffDateTime) {
+		public Builder withDropoffDateTime(LocalDateTime dropoffDateTime) {
 			this.dropoffDateTime = Objects.requireNonNull(dropoffDateTime, "Drop-off date/time must not be null");
 			return this;
 		}
 		
-		public CarBuilder withLicensePlate(LicensePlate licensePlate) {
+		public Builder withLicensePlate(LicensePlate licensePlate) {
 			this.licensePlate = Objects.requireNonNull(licensePlate, "License plate must not be null");
 			return this;
 		}
 		
-		public CarBuilder withPricePerDay(Double pricePerDay) {
+		public Builder withPricePerDay(Double pricePerDay) {
 			Double newPrice = Objects.requireNonNull(pricePerDay, "Car's price per day must not be null");
 			if (newPrice <= 0)
 				throw new RuntimeException(String.format("Invalid price for a car: %.2f", newPrice));

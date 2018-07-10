@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.carrental.domain.model.car.AvailableCarList;
 import com.carrental.domain.model.car.Brand;
 import com.carrental.domain.model.car.Car;
+import com.carrental.domain.model.car.CarRepository;
 import com.carrental.domain.model.car.Category;
 import com.carrental.domain.model.car.ExtraProduct;
 import com.carrental.domain.model.car.InsuranceType;
@@ -24,12 +25,12 @@ import com.carrental.domain.model.reservation.Country;
 import com.carrental.domain.model.reservation.Order;
 import com.carrental.domain.model.reservation.Reservation;
 import com.carrental.domain.model.reservation.ReservationException;
-import com.carrental.domain.service.SearchAvailableCarsService;
+import com.carrental.infrastructure.persistence.CarRepositoryInMemory;
 
 /***
  * This class is intended to be used as a playground for exercising the domain model.
  * Starting TDD-like allowed me to focus more on what I really needed from the domain model from the beginning.
- * TODO: Refactor to use Cucumber BDD style
+ * TODO: Refactor to use Cucumber
  * @author Danilo Teodoro
  *
  */
@@ -56,11 +57,12 @@ public class RentACarScenarioTest {
 		LocalDateTime finish = LocalDateTime.of(2018, 7, 8, 16, 00);
 		
 		// TODO: Mock the car's repository
-		SearchAvailableCarsService searchAvailableCars = new SearchAvailableCarsService();
+		// TODO: Check whether the car search feature could be implemented inside the RentalStore entity
+		CarRepository carRepository = new CarRepositoryInMemory();
 		Visitor visitor = new Visitor();
 		
 		// 1. A visitor searches for cars in Rotterdam for the period of: 03/07/2018 to 08/07/2018 (dd/MM/yyyy)
-		AvailableCarList availableCars = searchAvailableCars.basedOn(rotterdam, start, rotterdam, finish);
+		AvailableCarList availableCars = carRepository.basedOn(rotterdam, start, rotterdam, finish);
 		assertThat(availableCars.size(), greaterThan(0));
 		
 		// 2. After looking the list of cars, the visitor selects a VW Golf
