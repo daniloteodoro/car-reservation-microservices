@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Repository;
+
 import com.carrental.domain.model.car.AvailableCarList;
 import com.carrental.domain.model.car.Brand;
 import com.carrental.domain.model.car.Car;
@@ -15,6 +17,7 @@ import com.carrental.domain.model.car.Model;
 import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.Country;
 
+@Repository
 public class CarRepositoryInMemory implements CarRepository {
 	
 	public List<Car> getCarList() {

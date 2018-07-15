@@ -8,7 +8,7 @@ import java.util.Optional;
 import com.carrental.shared.ValueObject;
 
 // Design decision to have this object as a read-only list with some convenient	methods
-public class AvailableCarList extends AbstractList<Car> implements ValueObject {
+public class AvailableCarList extends AbstractList<Car> implements ValueObject, List<Car> {
 	
 	private final List<Car> availableCars;
 	
