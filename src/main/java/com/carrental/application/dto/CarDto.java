@@ -2,6 +2,7 @@ package com.carrental.application.dto;
 
 import java.time.LocalDateTime;
 
+import com.carrental.domain.model.car.Car;
 import com.carrental.domain.model.car.CarRentalStore;
 import com.carrental.domain.model.car.LicensePlate;
 import com.carrental.domain.model.car.Model;
@@ -33,6 +34,12 @@ public class CarDto {
 		this.dropoffDateTime = dropoffDateTime;
 		this.pricePerDay = pricePerDay;
 		this.store = store;
+	}
+	
+	public static CarDto basedOn(Car car) {
+		return new CarDto(car.getLicensePlate(), car.getModel(), 
+						  car.getPickupLocation(), car.getPickupDateTime(), car.getDropoffLocation(), car.getDropoffDateTime(), 
+						  car.getPricePerDay(), car.getStore());
 	}
 
 	public LicensePlate getLicensePlate() {

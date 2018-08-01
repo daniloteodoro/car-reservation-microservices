@@ -24,3 +24,9 @@ hs_err_pid*
 
 # Ignore compiled artifacts
 target/*
+
+# Others
+.classpath
+.project
+.settings/
+

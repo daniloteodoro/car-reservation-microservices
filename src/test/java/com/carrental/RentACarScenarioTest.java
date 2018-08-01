@@ -30,7 +30,7 @@ import com.carrental.infrastructure.persistence.CarRepositoryInMemory;
 /***
  * This class is intended to be used as a playground for exercising the domain model.
  * Starting TDD-like allowed me to focus more on what I really needed from the domain model from the beginning.
- * TODO: Refactor to use Cucumber
+ * TODO: Refactor to use Cucumber. Check other "TODOs" around the code
  * @author Danilo Teodoro
  *
  */
@@ -83,7 +83,7 @@ public class RentACarScenarioTest {
 		/* Second thought: Making changes on cars that will later be discarded seemed incorrect. Changed to reservation */
 		
 		// 3. He/she chooses "Additional Driver" as extra (total reservation price becomes EUR 310.00)
-		reservation.setExtraProducts(ExtraProduct.ADDITIONAL_DRIVER);
+		reservation.addExtraProduct(ExtraProduct.ADDITIONAL_DRIVER);
 		assertThat(reservation.calculateTotal(), is(310.0));
 		
 		// 4. When the visitor is prompted to choose the insurance type, they go for a Full Insurance (0.0 EUR to pay for damages), in a total quote price of EUR 400.00

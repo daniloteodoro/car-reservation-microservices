@@ -14,6 +14,16 @@ public final class LicensePlate implements ValueObject {
 		this.data = StringUtils.requireNonEmpty(data, "License plate description must not be empty");
 	}
 	
+	// Simple constructor for persistence and serializers
+	protected LicensePlate() {
+		super();
+		this.data = "";
+	}
+	
+	public String getData() {
+		return this.data;
+	}
+	
 	@Override
 	public String toString() {
 		return this.data;

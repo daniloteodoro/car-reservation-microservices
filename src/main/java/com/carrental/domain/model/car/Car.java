@@ -26,6 +26,7 @@ public class Car implements Entity {
 	/* Create convenience methods to check if car can be reserved */
 	
 	
+	// TODO: Do we really need pickup/drop-off information here?
 	public Car(LicensePlate licensePlate, Model model, City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation,
 			LocalDateTime dropoffDateTime, Double pricePerDay) {
 		super();
@@ -105,6 +106,11 @@ public class Car implements Entity {
 			return false;
 		Car other = (Car) obj;
 		return this.licensePlate.equals(other.licensePlate);
+	}
+	
+	@Override
+	public String toString() {
+		return this.model.toString();
 	}
 	
 	

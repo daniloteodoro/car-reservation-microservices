@@ -1,13 +1,14 @@
 package com.carrental.domain.model.reservation;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.time.temporal.ChronoUnit;
+
+import org.springframework.data.redis.core.RedisHash;
 
 import com.carrental.domain.model.car.Car;
 import com.carrental.domain.model.car.ExtraProduct;
@@ -20,8 +21,11 @@ import com.carrental.shared.Entity;
  * @author Danilo Teodoro
  *
  */
+@RedisHash("Reservation")
 public class Reservation implements Entity {
-
+	
+	private static final long serialVersionUID = -7213890863182901666L;
+	
 	private ReservationNumber reservationNumber;
 	private Customer customer;
 	private Car car;
@@ -53,13 +57,20 @@ public class Reservation implements Entity {
 		this.reservationNumber = new ReservationNumber(UUID.randomUUID().toString());
 	}
 	
+	public Car getCar() {
+		return car;
+	}
+	
 	public Customer getCustomer() {
 		return customer;
 	}
 	
-	public void setExtraProducts(ExtraProduct... extras) {
-		this.extras.clear();
-		this.extras.addAll(Arrays.asList(extras));
+	public void addExtraProduct(ExtraProduct extra) {
+		this.extras.add(extra);
+	}
+	
+	public void removeExtraProduct(ExtraProduct extra) {
+		this.extras.remove(extra);
 	}
 	
 	public Iterator<ExtraProduct> getExtras() {
@@ -139,6 +150,7 @@ public class Reservation implements Entity {
 		Reservation other = (Reservation) obj;
 		return this.reservationNumber.equals(other.reservationNumber);
 	}
+
 	
 }
 

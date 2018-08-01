@@ -13,6 +13,16 @@ public class Brand implements ValueObject {
 		this.description = StringUtils.requireNonEmpty(description, "Brand description must not be null");;
 	}
 	
+	// Simple constructor for persistence and serializers
+	protected Brand() {
+		super();
+		this.description = "";
+	}
+	
+	public String getDescription() {
+		return this.description;
+	}
+	
 	@Override
 	public String toString() {
 		return description;

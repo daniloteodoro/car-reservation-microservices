@@ -19,6 +19,14 @@ public class Model implements ValueObject {
 		this.category = Objects.requireNonNull(category, "Category must not be null");
 	}
 	
+	// Simple constructor for persistence and serializers
+	protected Model() {
+		super();
+		this.brand = null;
+		this.description = "";
+		this.category = Category.COMPACT;
+	}
+	
 	public Brand getBrand() {
 		return brand;
 	}
@@ -55,6 +63,10 @@ public class Model implements ValueObject {
 		return this.brand.equals(other.brand) &&
 				this.category.equals(other.category) &&
 				this.description.equalsIgnoreCase(other.description);
+	}
+
+	public String getDescription() {
+		return description;
 	}
 	
 

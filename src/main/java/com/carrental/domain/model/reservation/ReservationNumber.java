@@ -13,6 +13,10 @@ public class ReservationNumber implements ValueObject {
 		this.data = StringUtils.requireNonEmpty(data, "Reservation Number must not be null");
 	}
 	
+	public String getData() {
+		return data;
+	}
+	
 	@Override
 	public String toString() {
 		return this.data;
