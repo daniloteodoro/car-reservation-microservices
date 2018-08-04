@@ -8,6 +8,8 @@ import com.carrental.util.StringUtils;
 
 public class CarRentalStore implements ValueObject {
 	
+	private static final long serialVersionUID = -4929083702695156564L;
+	
 	private final City city;
 	private final String address;
 	

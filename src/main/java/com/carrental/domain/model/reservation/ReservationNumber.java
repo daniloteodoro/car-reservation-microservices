@@ -5,6 +5,8 @@ import com.carrental.util.StringUtils;
 
 public class ReservationNumber implements ValueObject {
 	
+	private static final long serialVersionUID = 5407616353851887002L;
+	
 	private final String data;
 	
 	

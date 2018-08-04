@@ -10,6 +10,8 @@ import com.carrental.shared.ValueObject;
 // Design decision to have this object as a read-only list with some convenient	methods
 public class AvailableCarList extends AbstractList<Car> implements ValueObject, List<Car> {
 	
+	private static final long serialVersionUID = 5645588000036085269L;
+	
 	private final List<Car> availableCars;
 	
 	

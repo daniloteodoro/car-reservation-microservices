@@ -4,7 +4,9 @@ import com.carrental.shared.ValueObject;
 import com.carrental.util.StringUtils;
 
 
-public final class LicensePlate implements ValueObject {
+public class LicensePlate implements ValueObject {
+	
+	private static final long serialVersionUID = 7089323646973623258L;
 	
 	private final String data;
 	

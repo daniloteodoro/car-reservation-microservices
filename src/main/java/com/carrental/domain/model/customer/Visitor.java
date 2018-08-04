@@ -5,10 +5,13 @@ import java.time.LocalDateTime;
 import com.carrental.domain.model.car.Car;
 import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.Reservation;
+import com.carrental.domain.model.reservation.exceptions.CarUnavailableException;
 import com.carrental.shared.ValueObject;
 
 public class Visitor implements ValueObject, Customer {
 
+	private static final long serialVersionUID = -4673063649974226277L;
+	
 	private String fullName;
 	private String email;
 	private String phoneNumber;
@@ -16,7 +19,7 @@ public class Visitor implements ValueObject, Customer {
 	private City city;
 	
 	
-	public Reservation select(Car car, City pickupPoint, LocalDateTime start, City dropOffPoint, LocalDateTime finish) {
+	public Reservation select(Car car, City pickupPoint, LocalDateTime start, City dropOffPoint, LocalDateTime finish) throws CarUnavailableException {
 		Reservation newReservation = new Reservation(this, car, pickupPoint, start, dropOffPoint, finish);
 		return newReservation;
 	}

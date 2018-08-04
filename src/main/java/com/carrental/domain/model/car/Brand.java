@@ -5,6 +5,8 @@ import com.carrental.util.StringUtils;
 
 public class Brand implements ValueObject {
 	
+	private static final long serialVersionUID = 1247274053918470317L;
+	
 	private final String description;
 	
 	

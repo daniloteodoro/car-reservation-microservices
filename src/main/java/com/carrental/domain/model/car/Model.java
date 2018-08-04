@@ -7,6 +7,8 @@ import com.carrental.util.StringUtils;
 
 public class Model implements ValueObject {
 	
+	private static final long serialVersionUID = 5896117340555165412L;
+	
 	private final Brand brand;
 	private final String description;
 	private final Category category;

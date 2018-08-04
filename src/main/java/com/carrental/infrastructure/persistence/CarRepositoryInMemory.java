@@ -47,7 +47,7 @@ public class CarRepositoryInMemory implements CarRepository {
 		
 		return cars;
 	}
-
+	
 	@Override
 	public AvailableCarList basedOn(City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation,
 			LocalDateTime dropoffDateTime) {
@@ -55,16 +55,8 @@ public class CarRepositoryInMemory implements CarRepository {
 		
 		// Returning a customized class instead of Collections.unmodifiableList to allow business methods to be added (e.g. findByModel)
 		List<Car> foundCars = cars.stream()
-			.filter((carAvailability) -> {
-			
-				boolean isAvailable = 
-						carAvailability.getPickupLocation().equals(pickupLocation) &&
-						carAvailability.getDropoffLocation().equals(pickupLocation) &&
-						carAvailability.getPickupDateTime().isBefore(pickupDateTime) &&
-						carAvailability.getDropoffDateTime().isAfter(dropoffDateTime);
-				
-				return isAvailable;
-			
+			.filter((car) -> {
+				return car.isAvailable(pickupLocation, pickupDateTime, dropoffLocation, dropoffDateTime);
 			}).collect(Collectors.toList());
 		
 		return new AvailableCarList(foundCars);

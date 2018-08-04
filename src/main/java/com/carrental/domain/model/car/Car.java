@@ -11,6 +11,8 @@ import com.carrental.shared.Entity;
  */
 public class Car implements Entity {
 	
+	private static final long serialVersionUID = 4404795652514822852L;
+	
 	private LicensePlate licensePlate;
 	private Model model;
 	private City pickupLocation;
@@ -87,8 +89,13 @@ public class Car implements Entity {
 	}
 	
 	public boolean isAvailable(City pickupLlocation, LocalDateTime start, City dropoffLocation, LocalDateTime end) {
-		// TODO: Implement
-		return false;
+		boolean isAvailable = 
+				this.getPickupLocation().equals(pickupLlocation) &&
+				this.getDropoffLocation().equals(dropoffLocation) &&
+				this.getPickupDateTime().isBefore(start) &&
+				this.getDropoffDateTime().isAfter(end);
+		
+		return isAvailable;
 	}
 	
 	@Override

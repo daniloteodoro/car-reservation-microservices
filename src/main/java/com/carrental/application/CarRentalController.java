@@ -28,6 +28,7 @@ import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.Reservation;
 import com.carrental.domain.model.reservation.ReservationNumber;
 import com.carrental.domain.model.reservation.ReservationRepository;
+import com.carrental.domain.model.reservation.exceptions.CarUnavailableException;
 import com.carrental.domain.model.reservation.exceptions.ReservationNotFoundException;
 
 @RestController
@@ -61,7 +62,7 @@ public class CarRentalController {
 	
 	// TODO: Category instead of license plate?
 	@PostMapping("/choose/{licenseplate}")
-	public ResponseEntity<ReservationDto> choose(@PathVariable("licenseplate") String licensePlate, @RequestBody CarDto car) throws URISyntaxException {
+	public ResponseEntity<ReservationDto> choose(@PathVariable("licenseplate") String licensePlate, @RequestBody CarDto car) throws URISyntaxException, CarUnavailableException {
 		City rotterdam = City.parse("rotterdam-nl");
 		LocalDateTime start = LocalDateTime.of(2018, 7, 3, 16, 30);
 		LocalDateTime finish = LocalDateTime.of(2018, 7, 8, 16, 00);
@@ -69,7 +70,7 @@ public class CarRentalController {
 		Car chosenCar = new Car(car.getLicensePlate(), car.getModel(), rotterdam, start, rotterdam, finish, car.getPricePerDay());
 		
 		// Start a new reservation based on the chosen car
-		Reservation reservation = visitor.select(chosenCar, rotterdam, start, rotterdam, finish);
+		Reservation reservation = visitor.select(chosenCar, rotterdam, start.plusDays(1), rotterdam, finish.minusHours(2));
 		
 		reservationRepository.save(reservation);
 		
@@ -92,7 +93,7 @@ public class CarRentalController {
 	
 	@DeleteMapping("/reservation/{reservationNumber}/extras/{extra}")
 	public ResponseEntity<ReservationDto> removeExtraFromReservation(@PathVariable String reservationNumber, @PathVariable ExtraProduct extra) throws ReservationNotFoundException {
-
+		
 		Reservation original = reservationRepository.findByNumber(new ReservationNumber(reservationNumber));
 		
 		original.removeExtraProduct(extra);

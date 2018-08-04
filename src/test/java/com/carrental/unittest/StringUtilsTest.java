@@ -1,4 +1,4 @@
-package com.carrental;
+package com.carrental.unittest;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

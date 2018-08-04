@@ -8,12 +8,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.springframework.data.redis.core.RedisHash;
-
 import com.carrental.domain.model.car.Car;
 import com.carrental.domain.model.car.ExtraProduct;
 import com.carrental.domain.model.car.InsuranceType;
 import com.carrental.domain.model.customer.Customer;
+import com.carrental.domain.model.reservation.exceptions.CarUnavailableException;
 import com.carrental.shared.Entity;
 
 /***
@@ -21,7 +20,8 @@ import com.carrental.shared.Entity;
  * @author Danilo Teodoro
  *
  */
-@RedisHash("Reservation")
+
+// TODO: Enforce invariants
 public class Reservation implements Entity {
 	
 	private static final long serialVersionUID = -7213890863182901666L;
@@ -37,7 +37,7 @@ public class Reservation implements Entity {
 	private LocalDateTime dropoffDateTime;
 	
 	// TODO: Create Builder
-	public Reservation(Customer customer, Car car, City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation, LocalDateTime dropoffDateTime) {
+	public Reservation(Customer customer, Car car, City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation, LocalDateTime dropoffDateTime) throws CarUnavailableException {
 		super();
 		
 		Objects.requireNonNull(customer, "Invalid customer");
@@ -45,7 +45,11 @@ public class Reservation implements Entity {
 		Objects.requireNonNull(pickupLocation, "Invalid pickup location");
 		Objects.requireNonNull(pickupDateTime, "Invalid pickup date/time");
 		Objects.requireNonNull(dropoffLocation, "Invalid drop-off location");
-		Objects.requireNonNull(dropoffDateTime, "Invalid drop-off date/time");		
+		Objects.requireNonNull(dropoffDateTime, "Invalid drop-off date/time");
+		
+		if (!car.isAvailable(pickupLocation, pickupDateTime, dropoffLocation, dropoffDateTime)) {
+			throw new CarUnavailableException();
+		}
 		
 		this.customer = customer;
 		this.car = car;
@@ -66,6 +70,7 @@ public class Reservation implements Entity {
 	}
 	
 	public void addExtraProduct(ExtraProduct extra) {
+		// TODO: Add validation
 		this.extras.add(extra);
 	}
 	
@@ -149,6 +154,11 @@ public class Reservation implements Entity {
 		
 		Reservation other = (Reservation) obj;
 		return this.reservationNumber.equals(other.reservationNumber);
+	}
+	
+	@Override
+	public String toString() {
+		return this.reservationNumber.toString();
 	}
 
 	

@@ -7,6 +7,7 @@ import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.Order;
 import com.carrental.domain.model.reservation.Reservation;
 import com.carrental.domain.model.reservation.ReservationException;
+import com.carrental.domain.model.reservation.exceptions.CarUnavailableException;
 import com.carrental.util.StringUtils;
 
 /***
@@ -28,7 +29,7 @@ public interface Customer {
 	void setAddress(String address);
 	void setCity(City city);
 	
-	Reservation select(Car car, City pickupPoint, LocalDateTime start, City dropOffPoint, LocalDateTime finish);
+	Reservation select(Car car, City pickupPoint, LocalDateTime start, City dropOffPoint, LocalDateTime finish) throws CarUnavailableException;
 	
 	default Order payAtStore(Reservation reservation) throws ReservationException {
 		StringUtils.requireNonEmpty(getFullName(), () -> new ReservationException("Full name is required before paying"));
