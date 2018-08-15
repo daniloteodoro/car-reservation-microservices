@@ -17,7 +17,7 @@ import com.carrental.domain.model.reservation.Country;
 
 public class CarTest {
 	
-	private City rotterdam = new City("Rotterdam", Country.NETHERLANDS);
+	private City rotterdam = new City("Rotterdam", Country.NL);
 	
 	
 	@Test

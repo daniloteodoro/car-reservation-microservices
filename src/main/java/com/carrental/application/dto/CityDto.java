@@ -6,7 +6,7 @@ import com.carrental.domain.model.reservation.Country;
 public class CityDto {
 	
 	private String name = "";
-	private Country country = Country.NETHERLANDS;
+	private Country country = Country.NL;
 	
 	public CityDto() {
 		super();

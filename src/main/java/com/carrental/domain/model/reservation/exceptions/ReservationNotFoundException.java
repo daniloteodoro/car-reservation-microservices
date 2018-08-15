@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.carrental.domain.model.reservation.ReservationException;
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
+@ResponseStatus(HttpStatus.NOT_FOUND)
 public class ReservationNotFoundException extends ReservationException {
 
 	private static final long serialVersionUID = -2502039936828883592L;

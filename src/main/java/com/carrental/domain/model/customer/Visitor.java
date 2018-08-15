@@ -9,7 +9,7 @@ import com.carrental.domain.model.reservation.exceptions.CarUnavailableException
 import com.carrental.shared.ValueObject;
 
 public class Visitor implements ValueObject, Customer {
-
+	
 	private static final long serialVersionUID = -4673063649974226277L;
 	
 	private String fullName;

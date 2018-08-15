@@ -3,21 +3,38 @@ package com.carrental.domain.model.car;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import com.carrental.domain.model.reservation.City;
-import com.carrental.shared.Entity;
 
 /***
  * Represents a car available to pickup in a given location and be dropped off in another location, during a period of time
  */
-public class Car implements Entity {
+@Entity
+public class Car implements com.carrental.shared.Entity {
 	
 	private static final long serialVersionUID = 4404795652514822852L;
 	
+	@EmbeddedId
 	private LicensePlate licensePlate;
+	
+	@ManyToOne
+	@JoinColumn(name="MODEL_ID", nullable=false, updatable=false)
 	private Model model;
+	
+	@ManyToOne
+	@JoinColumn(name="PICKUP_LOCATION")
 	private City pickupLocation;
+	
 	private LocalDateTime pickupDateTime;
+	
+	@ManyToOne
+	@JoinColumn(name="DROPOFF_LOCATION")
 	private City dropoffLocation;
+	
 	private LocalDateTime dropoffDateTime;
 	
 	// TODO: Create VO class to validate price
@@ -43,6 +60,11 @@ public class Car implements Entity {
 		
 		if (this.pricePerDay <= 0)
 			throw new RuntimeException(String.format("Invalid price for a car: %.2f", pricePerDay));
+	}
+	
+	// Simple constructor for persistence and serializers
+	protected Car() {
+		super();
 	}
 	
 	public double getInsurancePriceFor(InsuranceType insurance) {

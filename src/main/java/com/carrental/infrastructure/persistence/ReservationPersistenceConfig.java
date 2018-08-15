@@ -8,7 +8,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import com.carrental.domain.model.reservation.Reservation;
 
 @Configuration
-public class RedisConfig {
+public class ReservationPersistenceConfig {
 	
 	@Bean
 	JedisConnectionFactory jedisConnectionFactory() {

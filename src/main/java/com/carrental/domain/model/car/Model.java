@@ -2,20 +2,39 @@ package com.carrental.domain.model.car;
 
 import java.util.Objects;
 
-import com.carrental.shared.ValueObject;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+
 import com.carrental.util.StringUtils;
 
-public class Model implements ValueObject {
+@Entity
+public class Model implements com.carrental.shared.Entity {
 	
 	private static final long serialVersionUID = 5896117340555165412L;
 	
+	@Id
+	private final Integer id;
+	@Embedded
 	private final Brand brand;
 	private final String description;
+	@Enumerated(EnumType.STRING)
 	private final Category category;
 	
 	
+	public Model(Integer id, Brand brand, String modelDescription, Category category) {
+		super();
+		this.id = Objects.requireNonNull(id, "Id must not be null");
+		this.brand = Objects.requireNonNull(brand, "Brand must not be null");
+		this.description = StringUtils.requireNonEmpty(modelDescription, "Model description must not be null");
+		this.category = Objects.requireNonNull(category, "Category must not be null");
+	}
+	
 	public Model(Brand brand, String modelDescription, Category category) {
 		super();
+		this.id = -1;
 		this.brand = Objects.requireNonNull(brand, "Brand must not be null");
 		this.description = StringUtils.requireNonEmpty(modelDescription, "Model description must not be null");
 		this.category = Objects.requireNonNull(category, "Category must not be null");
@@ -24,6 +43,7 @@ public class Model implements ValueObject {
 	// Simple constructor for persistence and serializers
 	protected Model() {
 		super();
+		this.id = null;
 		this.brand = null;
 		this.description = "";
 		this.category = Category.COMPACT;
@@ -37,6 +57,14 @@ public class Model implements ValueObject {
 		return category;
 	}
 	
+	public String getDescription() {
+		return description;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+	
 	@Override
 	public String toString() {
 		return this.description;
@@ -44,12 +72,7 @@ public class Model implements ValueObject {
 	
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + brand.hashCode();
-		result = prime * result + category.hashCode();
-		result = prime * result + description.hashCode();
-		return result;
+		return this.id.hashCode();
 	}
 	
 	@Override
@@ -62,15 +85,9 @@ public class Model implements ValueObject {
 			return false;
 		
 		Model other = (Model) obj;
-		return this.brand.equals(other.brand) &&
-				this.category.equals(other.category) &&
-				this.description.equalsIgnoreCase(other.description);
+		return this.id.equals(other.id);
 	}
 
-	public String getDescription() {
-		return description;
-	}
-	
 
 }
 

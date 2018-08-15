@@ -1,12 +1,17 @@
 package com.carrental.domain.model.car;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+
 import com.carrental.shared.ValueObject;
 import com.carrental.util.StringUtils;
 
+@Embeddable
 public class Brand implements ValueObject {
 	
 	private static final long serialVersionUID = 1247274053918470317L;
 	
+	@Column(name="BRAND", nullable=false)
 	private final String description;
 	
 	

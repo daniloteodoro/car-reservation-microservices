@@ -1,13 +1,18 @@
 package com.carrental.domain.model.car;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+
 import com.carrental.shared.ValueObject;
 import com.carrental.util.StringUtils;
 
 
+@Embeddable
 public class LicensePlate implements ValueObject {
 	
 	private static final long serialVersionUID = 7089323646973623258L;
 	
+	@Column(name="LICENSE_PLATE", nullable=false, length=20)
 	private final String data;
 	
 	

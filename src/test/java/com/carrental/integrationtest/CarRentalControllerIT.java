@@ -28,6 +28,7 @@ import com.carrental.domain.model.car.Category;
 import com.carrental.domain.model.car.LicensePlate;
 import com.carrental.domain.model.car.Model;
 import com.carrental.domain.model.reservation.City;
+import com.carrental.domain.model.reservation.Country;
 import com.carrental.unittest.util.GsonLocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -55,7 +56,7 @@ public class CarRentalControllerIT {
 	
 	@Test
 	public void givenASearchResult_whenChoosingVWGolf_thenANewReservationIsReturned() throws Exception {
-		City rotterdam = City.parse("rotterdam-nl");
+		City rotterdam = new City(1, "rotterdam", Country.NL);
 		LicensePlate plate = new LicensePlate("AB-1234");
 		Car golf = new Car.Builder()
 					.withModel(new Model(new Brand("VW"), "Golf", Category.MEDIUMSIZED))
@@ -78,7 +79,7 @@ public class CarRentalControllerIT {
 	      .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 	      .andExpect(jsonPath("$.reservationNumber.data").isNotEmpty());
 	}
-	
+
 }
 
 

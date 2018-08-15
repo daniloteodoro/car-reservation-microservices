@@ -17,7 +17,7 @@ public class CityTest {
 		String validFormat = "rotterdam-nl";
 		City validCity = City.parse(validFormat);
 		assertThat(validCity.toString(), is(equalTo("rotterdam")));
-		assertThat(validCity.getCountry(), is(equalTo(Country.NETHERLANDS)));
+		assertThat(validCity.getCountry(), is(equalTo(Country.NL)));
 	}
 	
 	@Test(expected=CityFormatException.class)

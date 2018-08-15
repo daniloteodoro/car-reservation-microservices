@@ -6,7 +6,7 @@ import com.carrental.domain.model.reservation.City;
 import com.carrental.shared.ValueObject;
 import com.carrental.util.StringUtils;
 
-public class CarRentalStore implements ValueObject {
+public final class CarRentalStore implements ValueObject {
 	
 	private static final long serialVersionUID = -4929083702695156564L;
 	

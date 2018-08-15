@@ -1,10 +1,10 @@
 package com.carrental.domain.model.reservation;
 
-import com.carrental.domain.model.reservation.exceptions.ReservationNotFoundException;
+import java.util.Optional;
 
 public interface ReservationRepository {
 	
-	Reservation findByNumber(ReservationNumber number) throws ReservationNotFoundException;
+	Optional<Reservation> findByNumber(ReservationNumber number);
 	
 	void save(Reservation reservation);
 
