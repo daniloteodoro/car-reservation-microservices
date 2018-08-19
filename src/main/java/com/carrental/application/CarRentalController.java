@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,10 +54,11 @@ public class CarRentalController {
 	
 	// TODO: HATEOAS
 	@GetMapping("/search/from/{from}/{start}/to/{to}/{finish}")
-	public List<CarDto> searchCars(@PathVariable("from") String origin, @PathVariable("start") LocalDateTime start, 
-			@PathVariable("to") String destiny, @PathVariable("finish") LocalDateTime finish) throws CityNotFoundException {
-		
-finish this search parameters with dates
+	public List<CarDto> searchCars(
+			@PathVariable("from") String origin, 
+			@PathVariable("start") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime start, 
+			@PathVariable("to") String destiny, 
+			@PathVariable("finish") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime finish) throws CityNotFoundException {
 		
 		City pickupLocation;
 		City dropoffLocation;
@@ -71,9 +74,7 @@ finish this search parameters with dates
 			e.printStackTrace();
 			throw e;
 		}
-		// TODO: Get from parameters
-		//LocalDateTime start = LocalDateTime.of(2018, 7, 3, 16, 30);
-		//LocalDateTime finish = LocalDateTime.of(2018, 7, 8, 16, 00);
+		// TODO: Add timezone based on pick-up / drop-off location.
 		
 		List<CarDto> cars = 
 				carRepository.basedOn(pickupLocation, start, dropoffLocation, finish)
