@@ -53,6 +53,15 @@ public class CarRentalController {
 	}
 	
 	// TODO: HATEOAS
+	/***
+	 * Handles calls using the following example: http://localhost:8081/search/from/rotterdam-nl/2018-07-16 08:00/to/rotterdam-nl/2018-07-20 16:00
+	 * @param origin Represents a city name followed by its country code
+	 * @param start Represents the search's start date
+	 * @param destiny Represents a city name followed by its country code
+	 * @param finish Represents the search's end date
+	 * @return <s> A list of cars</s> A list of categories
+	 * @throws CityNotFoundException In case the API could not find the city (404 status code)
+	 */
 	@GetMapping("/search/from/{from}/{start}/to/{to}/{finish}")
 	public List<CarDto> searchCars(
 			@PathVariable("from") String origin, 
