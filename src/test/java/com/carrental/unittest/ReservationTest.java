@@ -46,6 +46,8 @@ public class ReservationTest {
 				.withDropoffDateTime(LocalDateTime.of(2018, 8, 31, 10, 00))
 				.withPricePerDay(40.0)
 				.withLicensePlate(someLicensePlate)
+				.withStandardInsurance(0.0)
+				.withFullInsuranceInsurance(12.0)
 				.build();
 		LocalDateTime start = LocalDateTime.of(2018, 8, 10, 10, 00);
 		LocalDateTime finish = LocalDateTime.of(2018, 9, 2, 10, 00);
@@ -64,6 +66,8 @@ public class ReservationTest {
 				.withDropoffDateTime(LocalDateTime.of(2018, 8, 31, 10, 00))
 				.withPricePerDay(40.0)
 				.withLicensePlate(someLicensePlate)
+				.withStandardInsurance(0.0)
+				.withFullInsuranceInsurance(12.0)
 				.build();
 		LocalDateTime start = LocalDateTime.of(2018, 8, 10, 10, 00);
 		LocalDateTime finish = LocalDateTime.of(2018, 8, 15, 10, 00);
@@ -82,6 +86,8 @@ public class ReservationTest {
 					.withDropoffLocation(someCity)
 					.withDropoffDateTime(LocalDateTime.of(2018, 8, 31, 10, 00))
 					.withPricePerDay(40.0)
+					.withStandardInsurance(0.0)
+					.withFullInsuranceInsurance(12.0)
 					.withLicensePlate(someLicensePlate)
 					.build();
 		LocalDateTime start = LocalDateTime.of(2018, 8, 10, 10, 00);
@@ -103,6 +109,8 @@ public class ReservationTest {
 				.withDropoffDateTime(LocalDateTime.of(2018, 8, 31, 10, 00))
 				.withPricePerDay(40.0)
 				.withLicensePlate(someLicensePlate)
+				.withStandardInsurance(0.0)
+				.withFullInsuranceInsurance(18.0)
 				.build();
 		LocalDateTime start = LocalDateTime.of(2018, 8, 10, 10, 00);
 		LocalDateTime finish = LocalDateTime.of(2018, 8, 15, 10, 00);
@@ -134,6 +142,8 @@ public class ReservationTest {
 				.withDropoffDateTime(LocalDateTime.of(2018, 8, 31, 10, 00))
 				.withPricePerDay(40.0)
 				.withLicensePlate(someLicensePlate)
+				.withStandardInsurance(0.0)
+				.withFullInsuranceInsurance(12.0)
 				.build();
 		LocalDateTime start = LocalDateTime.of(2018, 8, 10, 10, 00);
 		LocalDateTime finish = LocalDateTime.of(2018, 8, 15, 10, 00);

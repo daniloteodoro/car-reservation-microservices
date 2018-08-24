@@ -4,9 +4,8 @@ import java.util.Objects;
 
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.validation.constraints.NotEmpty;
 
 import com.carrental.util.StringUtils;
 
@@ -19,8 +18,9 @@ public class Model implements com.carrental.shared.Entity {
 	private final Integer id;
 	@Embedded
 	private final Brand brand;
+	@NotEmpty
 	private final String description;
-	@Enumerated(EnumType.STRING)
+	@Embedded
 	private final Category category;
 	
 	
@@ -46,7 +46,7 @@ public class Model implements com.carrental.shared.Entity {
 		this.id = null;
 		this.brand = null;
 		this.description = "";
-		this.category = Category.COMPACT;
+		this.category = null;
 	}
 	
 	public Brand getBrand() {

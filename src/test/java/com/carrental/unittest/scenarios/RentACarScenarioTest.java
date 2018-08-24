@@ -70,6 +70,8 @@ public class RentACarScenarioTest {
 								.withDropoffDateTime(LocalDateTime.of(2018, 07, 30, 18, 00))
 								.withLicensePlate(new LicensePlate("AB-1234"))
 								.withPricePerDay(50.0)
+								.withStandardInsurance(0.0)
+								.withFullInsuranceInsurance(18.0)
 								.build();
 		
 		// Current setup does not allow more than one rental point per city

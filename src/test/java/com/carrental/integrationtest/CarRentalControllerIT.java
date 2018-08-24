@@ -47,11 +47,14 @@ public class CarRentalControllerIT {
 	
 	@Test
 	public void givenTheCityOfRotterdam_whenSearchingForCars_thenOneCarIsReturned() throws Exception {
-	    mvc.perform(get("/search/rotterdam-nl")
+		
+		// http://localhost:8081/search/from/rotterdam-nl/2018-07-16 08:00/to/rotterdam-nl/2018-07-20 16:00
+		
+	    mvc.perform(get("/search/from/rotterdam-nl/2018-07-16 08:00/to/rotterdam-nl/2018-07-20 16:00")
 	      .contentType(MediaType.APPLICATION_JSON))
 	      .andExpect(status().isOk())
 	      .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-		      .andExpect(jsonPath("$[0].licensePlate.data", is("AB-1234")));
+		      .andExpect(jsonPath("$[0].car.licensePlate.data", is("AB-1234")));
 	}
 	
 	@Test
@@ -65,6 +68,8 @@ public class CarRentalControllerIT {
 					.withDropoffLocation(rotterdam)
 					.withDropoffDateTime(LocalDateTime.of(2018, 8, 31, 10, 00))
 					.withPricePerDay(40.0)
+					.withStandardInsurance(0.0)
+					.withFullInsuranceInsurance(18.0)
 					.withLicensePlate(plate)
 					.build();
 		

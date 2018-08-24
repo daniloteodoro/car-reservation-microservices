@@ -1,35 +1,71 @@
 package com.carrental.domain.model.car;
 
-public enum Category {
-	
-	ECONOMIC('A', 0.0, 15.0),
-	COMPACT('B', 0.0, 15.0),
-	MEDIUMSIZED('C', 0.0, 18.0),
-	CONFORT('D', 0.0, 20.0),
-	PREMIUM('E', 0.0, 35.0),
-	VAN('F', 0.0, 60.0),
-	SPORT('G', 00.0, 45.0);
-	
-	private Character initials;
-	private Double standardInsurance;
-	private Double fullInsurance;
-	
-	Category(Character initials, Double standardInsurance, Double fullInsurance) {
-		this.initials = initials;
-		this.standardInsurance = standardInsurance;
-		this.fullInsurance = fullInsurance;
-	}
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-	public Character getInitials() {
-		return this.initials;
+import com.carrental.shared.ValueObject;
+import com.carrental.util.StringUtils;
+
+@Embeddable
+public class Category implements ValueObject {
+	
+	private static final long serialVersionUID = -6083285778312724846L;
+	
+	public static final Category ECONOMIC = new Category("ECONOMIC");
+	public static final Category COMPACT = new Category("COMPACT");
+	public static final Category MEDIUMSIZED = new Category("MEDIUMSIZED");
+	public static final Category CONFORT = new Category("CONFORT");
+	public static final Category PREMIUM = new Category("PREMIUM");
+	public static final Category VAN = new Category("VAN");
+	public static final Category SPORT = new Category("SPORT");
+	
+	@Column(name="CATEGORY", nullable=false)
+	private final String description;
+	//private final Car featuringCar;
+	
+	
+	public Category(final String description) {
+		super();
+		this.description = StringUtils.requireNonEmpty(description, "Brand description must not be null");
 	}
 	
-	public Double getStandardInsurancePrice() {
-		return this.standardInsurance;
+	// Simple constructor for persistence and serializers
+	protected Category() {
+		super();
+		this.description = "";
 	}
-
-	public Double getFullInsurancePrice() {
-		return fullInsurance;
+	
+	public String getDescription() {
+		return description;
 	}
-
+	/*
+	public Car getFeaturingCar() {
+		return featuringCar;
+	}
+	*/
+	
+	@Override
+	public String toString() {
+		return description;
+	}
+	
+	@Override
+	public int hashCode() {
+		return description.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		
+		Category other = (Category) obj;
+		return description.equalsIgnoreCase(other.description);
+	}
 }
+
+

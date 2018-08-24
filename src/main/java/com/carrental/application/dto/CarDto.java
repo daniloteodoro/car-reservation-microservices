@@ -16,6 +16,8 @@ public class CarDto {
 	private LocalDateTime pickupDateTime;
 	private City dropoffLocation;
 	private LocalDateTime dropoffDateTime;
+	private Double standardInsurance;
+	private Double fullInsurance;
 	
 	// TODO: Create VO class to validate price
 	private Double pricePerDay;
@@ -24,7 +26,8 @@ public class CarDto {
 	
 
 	public CarDto(LicensePlate licensePlate, Model model, City pickupLocation, LocalDateTime pickupDateTime,
-			City dropoffLocation, LocalDateTime dropoffDateTime, Double pricePerDay, CarRentalStore store) {
+			City dropoffLocation, LocalDateTime dropoffDateTime, Double pricePerDay, CarRentalStore store,
+			Double standardInsurance, Double fullInsurance) {
 		super();
 		this.licensePlate = licensePlate;
 		this.model = model;
@@ -34,12 +37,14 @@ public class CarDto {
 		this.dropoffDateTime = dropoffDateTime;
 		this.pricePerDay = pricePerDay;
 		this.store = store;
+		this.standardInsurance = standardInsurance;
+		this.fullInsurance = fullInsurance;
 	}
 	
 	public static CarDto basedOn(Car car) {
 		return new CarDto(car.getLicensePlate(), car.getModel(), 
 						  car.getPickupLocation(), car.getPickupDateTime(), car.getDropoffLocation(), car.getDropoffDateTime(), 
-						  car.getPricePerDay(), car.getStore());
+						  car.getPricePerDay(), car.getStore(), car.getStandardInsurance(), car.getFullInsurance());
 	}
 
 	public LicensePlate getLicensePlate() {
@@ -72,6 +77,14 @@ public class CarDto {
 
 	public CarRentalStore getStore() {
 		return store;
+	}
+
+	public Double getStandardInsurance() {
+		return standardInsurance;
+	}
+
+	public Double getFullInsurance() {
+		return fullInsurance;
 	}
 
 }

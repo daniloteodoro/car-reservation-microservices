@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.carrental.application.dto.CarDto;
+import com.carrental.application.dto.CategoryFeaturingCarDto;
 import com.carrental.application.dto.ReservationDto;
 import com.carrental.domain.model.car.Car;
 import com.carrental.domain.model.car.CarRepository;
@@ -63,7 +63,7 @@ public class CarRentalController {
 	 * @throws CityNotFoundException In case the API could not find the city (404 status code)
 	 */
 	@GetMapping("/search/from/{from}/{start}/to/{to}/{finish}")
-	public List<CarDto> searchCars(
+	public List<CategoryFeaturingCarDto> searchCars(
 			@PathVariable("from") String origin, 
 			@PathVariable("start") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime start, 
 			@PathVariable("to") String destiny, 
@@ -75,7 +75,7 @@ public class CarRentalController {
 			pickupLocation = cityRepository.findByNameAndCountryCode(origin)
 									 .orElseThrow(() -> new CityNotFoundException(String.format("Origin city %s not found", origin)));
 			dropoffLocation = cityRepository.findByNameAndCountryCode(destiny)
-					 .orElseThrow(() -> new CityNotFoundException(String.format("Destiny city %s not found", destiny)));
+					 				 .orElseThrow(() -> new CityNotFoundException(String.format("Destiny city %s not found", destiny)));
 		} catch (CityFormatException e) {
 			e.printStackTrace();
 			throw e;
@@ -83,12 +83,13 @@ public class CarRentalController {
 			e.printStackTrace();
 			throw e;
 		}
+		
 		// TODO: Add timezone based on pick-up / drop-off location.
 		
-		List<CarDto> cars = 
-				carRepository.basedOn(pickupLocation, start, dropoffLocation, finish)
+		List<CategoryFeaturingCarDto> cars = 
+				carRepository.categoryBasedOn(pickupLocation, start, dropoffLocation, finish)
 					.stream()
-					.map((car) -> new CarDto(car.getLicensePlate(), car.getModel(), car.getPickupLocation(), car.getPickupDateTime(), car.getDropoffLocation(), car.getDropoffDateTime(), car.getPricePerDay(), car.getStore()))
+					.map((category) -> CategoryFeaturingCarDto.basedOn(category.getCategory(), category.getFeaturedCar()))
 					.collect(Collectors.toList());
 		
 		return cars;
@@ -96,12 +97,12 @@ public class CarRentalController {
 	
 	// TODO: Category instead of license plate?
 	@PostMapping("/choose/{licenseplate}")
-	public ResponseEntity<ReservationDto> choose(@PathVariable("licenseplate") String licensePlate, @RequestBody CarDto car) throws URISyntaxException, CarUnavailableException {
+	public ResponseEntity<ReservationDto> choose(@PathVariable("licenseplate") String licensePlate, @RequestBody CarDto car) throws URISyntaxException, CarUnavailableException, CityNotFoundException {
 		City rotterdam = City.parse("rotterdam-nl");
 		LocalDateTime start = LocalDateTime.of(2018, 7, 3, 16, 30);
 		LocalDateTime finish = LocalDateTime.of(2018, 7, 8, 16, 00);
 		Customer visitor = new Visitor();
-		Car chosenCar = new Car(car.getLicensePlate(), car.getModel(), rotterdam, start, rotterdam, finish, car.getPricePerDay());
+		Car chosenCar = new Car(car.getLicensePlate(), car.getModel(), rotterdam, start, rotterdam, finish, car.getPricePerDay(), car.getStandardInsurance(), car.getFullInsurance());
 		
 		// Start a new reservation based on the chosen car
 		Reservation reservation = visitor.select(chosenCar, rotterdam, start.plusDays(1), rotterdam, finish.minusHours(2));

@@ -32,6 +32,8 @@ public class CarTest {
 					.withDropoffLocation(rotterdam)
 					.withDropoffDateTime(LocalDateTime.of(2018, 8, 31, 10, 00))
 					.withPricePerDay(40.0)
+					.withStandardInsurance(10.0)
+					.withFullInsuranceInsurance(12.0)
 					.withLicensePlate(new LicensePlate("123"))
 					.build();
 		
@@ -50,6 +52,8 @@ public class CarTest {
 					.withDropoffLocation(rotterdam)
 					.withDropoffDateTime(LocalDateTime.of(2018, 8, 11, 10, 00))
 					.withPricePerDay(40.0)
+					.withStandardInsurance(10.0)
+					.withFullInsuranceInsurance(12.0)
 					.withLicensePlate(new LicensePlate("123"))
 					.build();
 		
