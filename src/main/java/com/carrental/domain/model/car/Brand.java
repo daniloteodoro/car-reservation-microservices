@@ -20,7 +20,7 @@ public class Brand implements ValueObject {
 		this.description = StringUtils.requireNonEmpty(description, "Brand description must not be null");
 	}
 	
-	// Simple constructor for persistence and serializers
+	// Simple constructor for ORM and serializers
 	protected Brand() {
 		super();
 		this.description = "";

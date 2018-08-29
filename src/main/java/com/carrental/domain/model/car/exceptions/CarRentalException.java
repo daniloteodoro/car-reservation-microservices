@@ -1,4 +1,4 @@
-package com.carrental.domain.model.reservation;
+package com.carrental.domain.model.car.exceptions;
 
 public class CarRentalException extends Exception {
 

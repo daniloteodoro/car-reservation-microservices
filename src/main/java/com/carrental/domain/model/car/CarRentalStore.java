@@ -20,7 +20,7 @@ public final class CarRentalStore implements ValueObject {
 		this.address = StringUtils.requireNonEmpty(address, "Address must not be null");
 	}
 	
-	// Simple constructor for persistence and serializers
+	// Simple constructor for ORM and serializers
 	protected CarRentalStore() {
 		super();
 		this.city = null;

@@ -2,14 +2,10 @@ package com.carrental.infrastructure.persistence.temp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +14,7 @@ import org.springframework.stereotype.Repository;
 import com.carrental.domain.model.car.AvailableCarList;
 import com.carrental.domain.model.car.Car;
 import com.carrental.domain.model.car.CarRepository;
-import com.carrental.domain.model.car.Category;
-import com.carrental.domain.model.car.CategoryFeaturingCar;
+import com.carrental.domain.model.car.CategoryFeaturingModel;
 import com.carrental.domain.model.reservation.City;
 
 @Repository
@@ -28,7 +23,8 @@ public class CarRepositoryInMemory implements CarRepository {
 	private final EntityManager entityManager;
 	
 	
-	public CarRepositoryInMemory(@Autowired final EntityManager entityManager) {
+	@Autowired
+	public CarRepositoryInMemory(final EntityManager entityManager) {
 		super();
 		this.entityManager = entityManager;
 	}
@@ -56,56 +52,49 @@ public class CarRepositoryInMemory implements CarRepository {
 		return cars;
 	}
 	
-	private Optional<Car> getOneCarByCategory(Category category) {
-		TypedQuery<Car> query = entityManager.createNamedQuery(Car.GET_SINGLE_CAR_BY_CATEGORY, Car.class);
-		query.setParameter("CATEGORY", category);
-		
-		List<Car> results = query.setMaxResults(1).getResultList();
-		
-		if (results.isEmpty()) {
-			return Optional.empty();
-		} else {
-			return Optional.of(results.get(0));
-		}
-	}
-	
 	@Override
 	@Transactional
 	public AvailableCarList basedOn(City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation, LocalDateTime dropoffDateTime) {
-		List<Car> cars = getCarList();
+//			List<Car> cars = getCarList();
 		
 		// Returning a customized class instead of Collections.unmodifiableList to allow business methods to be added (e.g. findByModel)
-		List<Car> foundCars = cars.stream()
+		List<Car> foundCars = new ArrayList<>(); /*cars.stream()
 			.filter((car) -> {
 				return car.isAvailable(pickupLocation, pickupDateTime, dropoffLocation, dropoffDateTime);
 			})
 			.collect(Collectors.toList());
-		
+		*/
 		return new AvailableCarList(foundCars);
 	}
 	
-	@Override
-	public List<CategoryFeaturingCar> categoryBasedOn(City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation,
+	public List<CategoryFeaturingModel> categoryBasedOn(City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation,
 			LocalDateTime dropoffDateTime) {
-		List<Category> categories = 
-				Arrays.asList(Category.COMPACT, Category.CONFORT, Category.ECONOMIC, Category.MEDIUMSIZED, Category.PREMIUM, Category.SPORT, Category.VAN);
-		List<CategoryFeaturingCar> categoryContainingCar = new ArrayList<>();
-		Optional<Car> foundCar;
 		
-		// TODO: Make tests pass
+		// TODO: just join on db after refactoring
+		/*
+		List<Category> categories = categoryRepository.findAll();
+		List<CategoryFeaturingModel> categoryContainingCar = new ArrayList<>();
+		Optional<Car> foundCar;
 		
 		for (Category current : categories) {
 			foundCar = getOneCarByCategory(current);
 			if (foundCar.isPresent()) {
-				categoryContainingCar.add(new CategoryFeaturingCar(current, foundCar.get()));
+				categoryContainingCar.add(new CategoryFeaturingModel(current, foundCar.get().getModel()));
 			}
 		}
 		
 		return categoryContainingCar;
+		*/
+		return null;
 	}
 	
 	
 }
+
+
+
+
+
 
 
 

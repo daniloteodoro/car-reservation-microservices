@@ -2,7 +2,7 @@ package com.carrental.domain.model.customer;
 
 import java.time.LocalDateTime;
 
-import com.carrental.domain.model.car.Car;
+import com.carrental.domain.model.car.Category;
 import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.Reservation;
 import com.carrental.domain.model.reservation.exceptions.CarUnavailableException;
@@ -19,8 +19,8 @@ public class Visitor implements ValueObject, Customer {
 	private City city;
 	
 	
-	public Reservation select(Car car, City pickupPoint, LocalDateTime start, City dropOffPoint, LocalDateTime finish) throws CarUnavailableException {
-		Reservation newReservation = new Reservation(this, car, pickupPoint, start, dropOffPoint, finish);
+	public Reservation select(Category category, City pickupPoint, LocalDateTime start, City dropOffPoint, LocalDateTime finish) throws CarUnavailableException {
+		Reservation newReservation = new Reservation(this, category, pickupPoint, start, dropOffPoint, finish);
 		return newReservation;
 	}
 

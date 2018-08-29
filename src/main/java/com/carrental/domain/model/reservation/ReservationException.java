@@ -1,5 +1,7 @@
 package com.carrental.domain.model.reservation;
 
+import com.carrental.domain.model.car.exceptions.CarRentalException;
+
 public class ReservationException extends CarRentalException {
 
 	private static final long serialVersionUID = -5490248715359705416L;

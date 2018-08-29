@@ -4,7 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,13 +17,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.carrental.application.dto.CarDto;
-import com.carrental.application.dto.CategoryFeaturingCarDto;
 import com.carrental.application.dto.ReservationDto;
-import com.carrental.domain.model.car.Car;
 import com.carrental.domain.model.car.CarRepository;
+import com.carrental.domain.model.car.Category;
+import com.carrental.domain.model.car.CategoryFeaturingModel;
+import com.carrental.domain.model.car.CategoryRepository;
+import com.carrental.domain.model.car.CategoryType;
 import com.carrental.domain.model.car.ExtraProduct;
 import com.carrental.domain.model.car.InsuranceType;
+import com.carrental.domain.model.car.exceptions.CategoryNotFoundException;
 import com.carrental.domain.model.customer.Customer;
 import com.carrental.domain.model.customer.Visitor;
 import com.carrental.domain.model.reservation.City;
@@ -42,14 +44,17 @@ public class CarRentalController {
 	private final CarRepository carRepository;
 	private final ReservationRepository reservationRepository;
 	private final CityRepository cityRepository;
+	private final CategoryRepository categoryRepository;
 	
 	
+	// TODO: Remove unused dependencies
 	@Autowired
-	public CarRentalController(CarRepository carRepository, ReservationRepository reservationRepository, CityRepository cityRepository) {
+	public CarRentalController(CarRepository carRepository, ReservationRepository reservationRepository, CityRepository cityRepository, CategoryRepository categoryRepository) {
 		super();
 		this.carRepository = carRepository;
 		this.reservationRepository = reservationRepository;
 		this.cityRepository = cityRepository;
+		this.categoryRepository = categoryRepository;
 	}
 	
 	// TODO: HATEOAS
@@ -63,7 +68,7 @@ public class CarRentalController {
 	 * @throws CityNotFoundException In case the API could not find the city (404 status code)
 	 */
 	@GetMapping("/search/from/{from}/{start}/to/{to}/{finish}")
-	public List<CategoryFeaturingCarDto> searchCars(
+	public List<CategoryFeaturingModel> searchCars(
 			@PathVariable("from") String origin, 
 			@PathVariable("start") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime start, 
 			@PathVariable("to") String destiny, 
@@ -86,26 +91,27 @@ public class CarRentalController {
 		
 		// TODO: Add timezone based on pick-up / drop-off location.
 		
-		List<CategoryFeaturingCarDto> cars = 
-				carRepository.categoryBasedOn(pickupLocation, start, dropoffLocation, finish)
-					.stream()
-					.map((category) -> CategoryFeaturingCarDto.basedOn(category.getCategory(), category.getFeaturedCar()))
-					.collect(Collectors.toList());
+		List<CategoryFeaturingModel> availableCategories = 
+				categoryRepository.availableOn(pickupLocation, start, dropoffLocation, finish);
 		
-		return cars;
+		return availableCategories;
 	}
 	
 	// TODO: Category instead of license plate?
 	@PostMapping("/choose/{licenseplate}")
-	public ResponseEntity<ReservationDto> choose(@PathVariable("licenseplate") String licensePlate, @RequestBody CarDto car) throws URISyntaxException, CarUnavailableException, CityNotFoundException {
+	public ResponseEntity<ReservationDto> choose(@PathVariable("licenseplate") String licensePlate, @RequestBody CategoryType category) throws URISyntaxException, CarUnavailableException, CityNotFoundException, CategoryNotFoundException {
 		City rotterdam = City.parse("rotterdam-nl");
 		LocalDateTime start = LocalDateTime.of(2018, 7, 3, 16, 30);
 		LocalDateTime finish = LocalDateTime.of(2018, 7, 8, 16, 00);
 		Customer visitor = new Visitor();
-		Car chosenCar = new Car(car.getLicensePlate(), car.getModel(), rotterdam, start, rotterdam, finish, car.getPricePerDay(), car.getStandardInsurance(), car.getFullInsurance());
+		Optional<Category> chosenCategory = categoryRepository.findById(category);
+		
+		if (!chosenCategory.isPresent()) {
+			throw new CategoryNotFoundException();
+		}
 		
 		// Start a new reservation based on the chosen car
-		Reservation reservation = visitor.select(chosenCar, rotterdam, start.plusDays(1), rotterdam, finish.minusHours(2));
+		Reservation reservation = visitor.select(chosenCategory.get(), rotterdam, start.plusDays(1), rotterdam, finish.minusHours(2));
 		
 		reservationRepository.save(reservation);
 		

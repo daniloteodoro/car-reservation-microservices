@@ -22,13 +22,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.carrental.App;
 import com.carrental.application.dto.CarDto;
-import com.carrental.domain.model.car.Brand;
 import com.carrental.domain.model.car.Car;
-import com.carrental.domain.model.car.Category;
 import com.carrental.domain.model.car.LicensePlate;
-import com.carrental.domain.model.car.Model;
-import com.carrental.domain.model.reservation.City;
-import com.carrental.domain.model.reservation.Country;
+import com.carrental.shared.SampleModels;
 import com.carrental.unittest.util.GsonLocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -59,19 +55,8 @@ public class CarRentalControllerIT {
 	
 	@Test
 	public void givenASearchResult_whenChoosingVWGolf_thenANewReservationIsReturned() throws Exception {
-		City rotterdam = new City(1, "rotterdam", Country.NL);
 		LicensePlate plate = new LicensePlate("AB-1234");
-		Car golf = new Car.Builder()
-					.withModel(new Model(new Brand("VW"), "Golf", Category.MEDIUMSIZED))
-					.withPickupLocation(rotterdam)
-					.withPickupDateTime(LocalDateTime.of(2018, 8, 1, 10, 00))
-					.withDropoffLocation(rotterdam)
-					.withDropoffDateTime(LocalDateTime.of(2018, 8, 31, 10, 00))
-					.withPricePerDay(40.0)
-					.withStandardInsurance(0.0)
-					.withFullInsuranceInsurance(18.0)
-					.withLicensePlate(plate)
-					.build();
+		Car golf = new Car(plate, SampleModels.VW_GOLF);
 		
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 									 .registerTypeAdapter(LocalDateTime.class, new GsonLocalDateTimeAdapter())

@@ -11,9 +11,7 @@ import com.carrental.domain.model.reservation.ReservationNumber;
 
 public class ReservationDto {
 	
-	private CarDto car;
 	private ReservationNumber reservationNumber;
-	//private Customer customer;
 	private List<ExtraProduct> extras = new ArrayList<>();
 	private InsuranceType insurance = InsuranceType.STANDARD_INSURANCE;
 	private CityDto pickupLocation;
@@ -26,7 +24,6 @@ public class ReservationDto {
 			InsuranceType insurance, CityDto pickupLocation, LocalDateTime pickupDateTime, CityDto dropoffLocation,
 			LocalDateTime dropoffDateTime) {
 		super();
-		this.car = car;
 		this.reservationNumber = reservationNumber;
 		this.extras = extras;
 		this.insurance = insurance;
@@ -37,27 +34,21 @@ public class ReservationDto {
 	}
 
 	public static ReservationDto basedOn(Reservation reservation) {
-		CarDto car = CarDto.basedOn(reservation.getCar());
 		List<ExtraProduct> extras = new ArrayList<>();
 		CityDto pickupLocation = CityDto.basedOn(reservation.getPickupLocation());
 		CityDto dropoffLocation = CityDto.basedOn(reservation.getDropoffLocation());
 		
 		reservation.getExtras().forEachRemaining((item) -> extras.add(item));
 		
-		return new ReservationDto(car, reservation.getReservationNumber(), extras, reservation.getInsurance(), 
+		return new ReservationDto(null, reservation.getReservationNumber(), extras, reservation.getInsurance(), 
 								  pickupLocation, reservation.getPickupDateTime(), dropoffLocation, reservation.getDropoffDateTime());
 	}
 	
-	// Simple constructor for persistence and serializers
+	// Simple constructor for ORM and serializers
 	protected ReservationDto() {
 		super();
-		this.car = null;
 	}
 	
-	public CarDto getCar() {
-		return this.car;
-	}
-
 	public ReservationNumber getReservationNumber() {
 		return reservationNumber;
 	}

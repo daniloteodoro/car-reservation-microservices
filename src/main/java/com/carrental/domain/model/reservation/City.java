@@ -40,7 +40,7 @@ public class City implements com.carrental.shared.Entity {
 		this.country = Objects.requireNonNull(country, "City Country must not be null");
 	}
 	
-	// Simple constructor for persistence and serializers
+	// Simple constructor for ORM and serializers
 	protected City() {
 		super();
 		this.id = -1;
