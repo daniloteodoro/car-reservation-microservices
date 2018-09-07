@@ -2,10 +2,10 @@ package com.carrental.domain.model.reservation;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import com.carrental.domain.model.car.Category;
@@ -28,13 +28,13 @@ public class Reservation implements Entity, Comparable<Reservation> {
 	private ReservationNumber reservationNumber;
 	private Customer customer;
 	private Category category;
-	private List<ExtraProduct> extras = new ArrayList<>();
+	private Set<ExtraProduct> extras = new HashSet<>();
 	private InsuranceType insurance = InsuranceType.STANDARD_INSURANCE;
 	private City pickupLocation;
 	private LocalDateTime pickupDateTime;
 	private City dropoffLocation;
 	private LocalDateTime dropoffDateTime;
-	
+	// TODO: Reservation date/time + expired convenience method?
 	
 	// TODO: Create Builder
 	public Reservation(Customer customer, Category category, City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation, LocalDateTime dropoffDateTime)  {
@@ -47,7 +47,7 @@ public class Reservation implements Entity, Comparable<Reservation> {
 		Objects.requireNonNull(dropoffLocation, "Invalid drop-off location");
 		Objects.requireNonNull(dropoffDateTime, "Invalid drop-off date/time");
 		
-		// TODO: Do we need this check (and here)?
+		// TODO: Do we need this check (and here)?  -> Create factory to return reservation and test for this
 		/*
 		if (!((Car)category).isAvailable(pickupLocation, pickupDateTime, dropoffLocation, dropoffDateTime)) {
 			throw new CarUnavailableException();
@@ -72,11 +72,18 @@ public class Reservation implements Entity, Comparable<Reservation> {
 	}
 	
 	public void addExtraProduct(ExtraProduct extra) {
-		// TODO: Add validation
-		this.extras.add(extra);
+		Objects.requireNonNull(extra, "Extra product must not be null");
+		if (!extras.contains(extra)) {
+			this.extras.add(extra);
+		}
+	}
+	
+	public void clearExtras() {
+		this.extras.clear();
 	}
 	
 	public void removeExtraProduct(ExtraProduct extra) {
+		Objects.requireNonNull(extra, "Extra product must not be null");
 		this.extras.remove(extra);
 	}
 	

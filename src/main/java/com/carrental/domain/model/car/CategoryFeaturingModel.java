@@ -3,7 +3,7 @@ package com.carrental.domain.model.car;
 import com.carrental.shared.ValueObject;
 
 public class CategoryFeaturingModel implements ValueObject {
-
+	
 	private static final long serialVersionUID = -4939181845185321612L;
 	
 	private final Category category;
@@ -26,7 +26,7 @@ public class CategoryFeaturingModel implements ValueObject {
 	public Category getCategory() {
 		return category;
 	}
-	public Model getFeaturedCar() {
+	public Model getFeaturedModel() {
 		return featuredModel;
 	}
 	

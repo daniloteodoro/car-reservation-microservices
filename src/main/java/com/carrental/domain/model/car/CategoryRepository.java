@@ -12,6 +12,7 @@ public interface CategoryRepository {
 	
 	Optional<Category> findById(CategoryType categoryType);
 	
-	List<CategoryFeaturingModel> availableOn(City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation, LocalDateTime dropoffDateTime);
+	// TODO: Change to Model Repository
+	List<Model> availableOn(City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation, LocalDateTime dropoffDateTime);
 
 }

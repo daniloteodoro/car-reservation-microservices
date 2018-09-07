@@ -21,6 +21,7 @@ import com.carrental.domain.model.customer.Visitor;
 import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.Reservation;
 import com.carrental.domain.model.reservation.exceptions.CarUnavailableException;
+import com.carrental.domain.model.reservation.exceptions.ReservationException;
 import com.carrental.shared.SampleCategories;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -53,7 +54,7 @@ public class ReservationTest {
 	}
 	
 	@Test
-	public void testTotalFor5DaysReservationWithAdditionalDriver() throws CarUnavailableException {
+	public void testTotalFor5DaysReservationWithAdditionalDriver() throws ReservationException {
 		LocalDateTime start = LocalDateTime.of(2018, 8, 10, 10, 00);
 		LocalDateTime finish = LocalDateTime.of(2018, 8, 15, 10, 00);
 
@@ -64,7 +65,7 @@ public class ReservationTest {
 	}
 	
 	@Test
-	public void testTotalFor5DaysReservationWithAdditionalDriverAndFullInsurance() throws CarUnavailableException {
+	public void testTotalFor5DaysReservationWithAdditionalDriverAndFullInsurance() throws ReservationException {
 		LocalDateTime start = LocalDateTime.of(2018, 8, 10, 10, 00);
 		LocalDateTime finish = LocalDateTime.of(2018, 8, 15, 10, 00);
 		

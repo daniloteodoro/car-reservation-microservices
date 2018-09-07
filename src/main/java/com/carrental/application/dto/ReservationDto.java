@@ -18,19 +18,23 @@ public class ReservationDto {
 	private LocalDateTime pickupDateTime;
 	private CityDto dropoffLocation;
 	private LocalDateTime dropoffDateTime;
+	private CategoryDto category;
+	private Double total;
+	// TODO: Customer
 	
 	
-	public ReservationDto(CarDto car, ReservationNumber reservationNumber, List<ExtraProduct> extras,
-			InsuranceType insurance, CityDto pickupLocation, LocalDateTime pickupDateTime, CityDto dropoffLocation,
-			LocalDateTime dropoffDateTime) {
+	public ReservationDto(ReservationNumber reservationNumber, CategoryDto category, List<ExtraProduct> extras, InsuranceType insurance, 
+			CityDto pickupLocation, LocalDateTime pickupDateTime, CityDto dropoffLocation, LocalDateTime dropoffDateTime, Double total) {
 		super();
 		this.reservationNumber = reservationNumber;
+		this.category = category;
 		this.extras = extras;
 		this.insurance = insurance;
 		this.pickupLocation = pickupLocation;
 		this.pickupDateTime = pickupDateTime;
 		this.dropoffLocation = dropoffLocation;
 		this.dropoffDateTime = dropoffDateTime;
+		this.total = total;
 	}
 
 	public static ReservationDto basedOn(Reservation reservation) {
@@ -40,8 +44,8 @@ public class ReservationDto {
 		
 		reservation.getExtras().forEachRemaining((item) -> extras.add(item));
 		
-		return new ReservationDto(null, reservation.getReservationNumber(), extras, reservation.getInsurance(), 
-								  pickupLocation, reservation.getPickupDateTime(), dropoffLocation, reservation.getDropoffDateTime());
+		return new ReservationDto(reservation.getReservationNumber(), CategoryDto.basedOn(reservation.getCategory()), extras, reservation.getInsurance(), 
+								  pickupLocation, reservation.getPickupDateTime(), dropoffLocation, reservation.getDropoffDateTime(), reservation.calculateTotal());
 	}
 	
 	// Simple constructor for ORM and serializers
@@ -75,6 +79,14 @@ public class ReservationDto {
 
 	public LocalDateTime getDropoffDateTime() {
 		return dropoffDateTime;
+	}
+
+	public CategoryDto getCategory() {
+		return category;
+	}
+
+	public Double getTotal() {
+		return total;
 	}
 	
 }

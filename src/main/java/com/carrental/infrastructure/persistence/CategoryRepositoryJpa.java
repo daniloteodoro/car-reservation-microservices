@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.carrental.domain.model.car.Category;
-import com.carrental.domain.model.car.CategoryFeaturingModel;
 import com.carrental.domain.model.car.CategoryRepository;
 import com.carrental.domain.model.car.CategoryType;
 import com.carrental.domain.model.car.Model;
@@ -41,7 +40,7 @@ public class CategoryRepositoryJpa implements CategoryRepository {
 	@Override
 	public Optional<Category> findById(CategoryType categoryType) {
 		TypedQuery<Category> query = entityManager.createNamedQuery(Category.GET_CATEGORY_BY_TYPE, Category.class);
-		query.setParameter("type", categoryType);
+		query.setParameter("TYPE", categoryType);
 		
 		List<Category> results = query.getResultList();
 		
@@ -67,8 +66,8 @@ public class CategoryRepositoryJpa implements CategoryRepository {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<CategoryFeaturingModel> availableOn(City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation, LocalDateTime dropoffDateTime) {
-		List<CategoryFeaturingModel> categoryContainingModel = new ArrayList<>();
+	public List<Model> availableOn(City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation, LocalDateTime dropoffDateTime) {
+		List<Model> availableModel = new ArrayList<>();
 		
 		Query query = entityManager.createNativeQuery(Category.GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION, Category.class);
 		query.setParameter("END_DATE", dropoffDateTime);
@@ -80,11 +79,11 @@ public class CategoryRepositoryJpa implements CategoryRepository {
 		for (Category current : categories) {
 			foundModel = getExampleModelByCategory(current);
 			if (foundModel.isPresent()) {
-				categoryContainingModel.add(new CategoryFeaturingModel(current, foundModel.get()));
+				availableModel.add(foundModel.get());
 			}
 		}
 		
-		return categoryContainingModel;
+		return availableModel;
 	}
 	
 	

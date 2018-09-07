@@ -25,8 +25,8 @@ import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.Country;
 import com.carrental.domain.model.reservation.Order;
 import com.carrental.domain.model.reservation.Reservation;
-import com.carrental.domain.model.reservation.ReservationException;
 import com.carrental.domain.model.reservation.exceptions.CarUnavailableException;
+import com.carrental.domain.model.reservation.exceptions.ReservationException;
 import com.carrental.shared.SampleCategories;
 import com.carrental.shared.SampleModels;
 
@@ -54,10 +54,10 @@ public class RentACarScenarioTest {
 	 * 4. When the visitor is prompted to choose the insurance type, they go for a Full Insurance (0.0 EUR to pay for damages), in a total quote price of EUR 350.00
 	 * 5. As the visitor is satisfied with the price, he/she fills up their personal details
 	 * 6. Payment is set to be concluded at the rental store and current reservation is converted to a final order after validating visitor's contact information.
-	 * @throws CarUnavailableException 
+	 * @throws ReservationException 
 	 */
 	@Test
-	public void testCompleteRentalProcess() throws CarUnavailableException {
+	public void testCompleteRentalProcess() throws ReservationException {
 		
 		// TODO: Check for Factories, Repositories, and Services
 		
@@ -73,7 +73,8 @@ public class RentACarScenarioTest {
 		Customer visitor = new Visitor();
 		
 		// 1. A visitor searches for cars in Rotterdam for the period of: 03/07/2018 to 08/07/2018 (dd/MM/yyyy)
-		List<CategoryFeaturingModel> availableCategories = categoryRepository.availableOn(rotterdam, start, rotterdam, finish);
+		// TODO: Fix tests
+		List<CategoryFeaturingModel> availableCategories = null; //categoryRepository.availableOn(rotterdam, start, rotterdam, finish);
 		//AvailableCarList availableCars = carRepository.basedOn(rotterdam, start, rotterdam, finish);
 		assertThat(availableCategories.size(), is(greaterThan(0)));
 		
