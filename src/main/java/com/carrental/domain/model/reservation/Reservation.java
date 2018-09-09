@@ -95,6 +95,10 @@ public class Reservation implements Entity, Comparable<Reservation> {
 		this.insurance = insurance;
 	}
 	
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
+	}
+	
 	public City getPickupLocation() {
 		return pickupLocation;
 	}

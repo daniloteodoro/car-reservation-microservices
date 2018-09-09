@@ -19,6 +19,9 @@ public class CityDto {
 	}
 	
 	public static CityDto basedOn(City city) {
+		if (city == null) {
+			return null;
+		}
 		return new CityDto(city.getName(), city.getCountry());
 	}
 

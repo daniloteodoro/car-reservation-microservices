@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.carrental.application.dto.CustomerDto;
 import com.carrental.application.dto.ModelDto;
 import com.carrental.application.dto.ReservationDto;
 import com.carrental.domain.model.car.Category;
@@ -101,7 +103,7 @@ public class CarRentalController {
 	}
 	
 	@PostMapping("/search/from/{from}/{start}/to/{to}/{finish}/{category}")
-	public ResponseEntity<ReservationDto> choose(
+	public ResponseEntity<ReservationDto> chooseCategory(
 			@PathVariable("from") String origin, 
 			@PathVariable("start") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime start, 
 			@PathVariable("to") String destiny, 
@@ -110,6 +112,8 @@ public class CarRentalController {
 			) throws URISyntaxException, CityNotFoundException, CategoryNotFoundException, CarUnavailableException {
 		
 		Customer visitor = new Visitor();
+		visitor.setFullName("Temp name");
+		
 		City pickupLocation;
 		City dropoffLocation;
 		try {
@@ -152,7 +156,7 @@ public class CarRentalController {
 	}
 	
 	@PutMapping("/reservation/{reservationNumber}/extras")
-	public ResponseEntity<ReservationDto> addExtraToReservation(@PathVariable String reservationNumber, @RequestBody ExtraProduct[] extras) throws ReservationException {
+	public ResponseEntity<ReservationDto> setReservationExtras(@PathVariable String reservationNumber, @RequestBody ExtraProduct[] extras) throws ReservationException {
 		ReservationNumber id = ReservationNumber.of(reservationNumber);
 		Reservation original = reservationRepository.findByNumber(id)
 													.orElseThrow(() -> new ReservationNotFoundException(id));
@@ -161,19 +165,6 @@ public class CarRentalController {
 		Arrays.stream(extras).forEach(
 			(extraProduct) -> original.addExtraProduct(extraProduct)
 		);
-		
-		reservationRepository.save(original);
-		
-		return ResponseEntity.ok(ReservationDto.basedOn(original));
-	}
-	
-	@DeleteMapping("/reservation/{reservationNumber}/extras/{extra}")
-	public ResponseEntity<ReservationDto> removeExtraFromReservation(@PathVariable String reservationNumber, @PathVariable ExtraProduct extra) throws ReservationNotFoundException {
-		ReservationNumber id = ReservationNumber.of(reservationNumber);
-		Reservation original = reservationRepository.findByNumber(id)
-													.orElseThrow(() -> new ReservationNotFoundException(id));
-		
-		original.removeExtraProduct(extra);
 		
 		reservationRepository.save(original);
 		
@@ -193,13 +184,37 @@ public class CarRentalController {
 		return ResponseEntity.ok(ReservationDto.basedOn(original));
 	}
 	
-	@PostMapping("/reservation/{reservationNumber}/personal-details")
-	public ResponseEntity<ReservationDto> setReservationPersonalDetails(@PathVariable String reservationNumber /* Visitor data */) throws ReservationNotFoundException {
+	@PutMapping("/reservation/{reservationNumber}/customer-details")
+	public ResponseEntity<ReservationDto> setReservationCustomerDetails(@PathVariable String reservationNumber, @RequestBody CustomerDto customerData) throws ReservationNotFoundException, CityNotFoundException {
 		ReservationNumber id = ReservationNumber.of(reservationNumber);
 		Reservation original = reservationRepository.findByNumber(id)
 													.orElseThrow(() -> new ReservationNotFoundException(id));
+		// TODO: Repository in memory for cities?
+		City customerCity;
+		try {
+			Objects.requireNonNull(customerData.getCity(), "Customer's city is obligatory");
+			customerCity = cityRepository.findByNameAndCountryCode(customerData.getCity().getName(), customerData.getCity().getCountry().toString())
+					 				 	 .orElseThrow(() -> new CityNotFoundException(String.format("Customer city '%s' not found", customerData.getCity())));
+		} catch (CityFormatException e) {
+			e.printStackTrace();
+			throw e;
+		} catch (CityNotFoundException e) {
+			e.printStackTrace();
+			throw e;
+		}
 		
-		return ResponseEntity.ok().build();
+		Customer visitor = new Visitor();
+		visitor.setFullName(customerData.getFullName());
+		visitor.setEmail(customerData.getEmail());
+		visitor.setPhoneNumber(customerData.getPhoneNumber());
+		visitor.setAddress(customerData.getAddress());
+		visitor.setCity(customerCity);
+		
+		original.setCustomer(visitor);
+		
+		reservationRepository.save(original);
+		
+		return ResponseEntity.ok(ReservationDto.basedOn(original));
 	}
 	
 	@PostMapping("/reservation/{reservationNumber}/confirm")
@@ -210,7 +225,7 @@ public class CarRentalController {
 		
 		return ResponseEntity.accepted().build();
 	}
-	
+
 }
 
 

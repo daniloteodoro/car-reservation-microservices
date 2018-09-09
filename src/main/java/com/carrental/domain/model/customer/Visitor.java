@@ -23,6 +23,16 @@ public class Visitor implements ValueObject, Customer {
 		Reservation newReservation = new Reservation(this, category, pickupPoint, start, dropOffPoint, finish);
 		return newReservation;
 	}
+	
+	public static Visitor basedOnAnotherCustomer(Customer customer) {
+		Visitor visitor = new Visitor();
+		visitor.setFullName(customer.getFullName());
+		visitor.setEmail(customer.getEmail());
+		visitor.setPhoneNumber(customer.getPhoneNumber());
+		visitor.setAddress(customer.getAddress());
+		visitor.setCity(customer.getCity());
+		return visitor;
+	}
 
 	public String getFullName() {
 		return fullName;

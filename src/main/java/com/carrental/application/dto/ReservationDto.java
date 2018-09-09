@@ -20,14 +20,15 @@ public class ReservationDto {
 	private LocalDateTime dropoffDateTime;
 	private CategoryDto category;
 	private Double total;
-	// TODO: Customer
+	private CustomerDto customer;
 	
 	
-	public ReservationDto(ReservationNumber reservationNumber, CategoryDto category, List<ExtraProduct> extras, InsuranceType insurance, 
+	public ReservationDto(ReservationNumber reservationNumber, CategoryDto category, CustomerDto customer, List<ExtraProduct> extras, InsuranceType insurance, 
 			CityDto pickupLocation, LocalDateTime pickupDateTime, CityDto dropoffLocation, LocalDateTime dropoffDateTime, Double total) {
 		super();
 		this.reservationNumber = reservationNumber;
 		this.category = category;
+		this.customer = customer;
 		this.extras = extras;
 		this.insurance = insurance;
 		this.pickupLocation = pickupLocation;
@@ -44,8 +45,9 @@ public class ReservationDto {
 		
 		reservation.getExtras().forEachRemaining((item) -> extras.add(item));
 		
-		return new ReservationDto(reservation.getReservationNumber(), CategoryDto.basedOn(reservation.getCategory()), extras, reservation.getInsurance(), 
-								  pickupLocation, reservation.getPickupDateTime(), dropoffLocation, reservation.getDropoffDateTime(), reservation.calculateTotal());
+		return new ReservationDto(reservation.getReservationNumber(), CategoryDto.basedOn(reservation.getCategory()), CustomerDto.basedOn(reservation.getCustomer()), 
+								  extras, reservation.getInsurance(), pickupLocation, reservation.getPickupDateTime(), dropoffLocation, reservation.getDropoffDateTime(), 
+								  reservation.calculateTotal());
 	}
 	
 	// Simple constructor for ORM and serializers
@@ -87,6 +89,10 @@ public class ReservationDto {
 
 	public Double getTotal() {
 		return total;
+	}
+
+	public CustomerDto getCustomer() {
+		return customer;
 	}
 	
 }
