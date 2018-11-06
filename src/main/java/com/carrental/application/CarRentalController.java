@@ -203,6 +203,8 @@ public class CarRentalController {
 			throw e;
 		}
 		
+		// TODO: Validate customer information
+		
 		Customer visitor = new Visitor();
 		visitor.setFullName(customerData.getFullName());
 		visitor.setEmail(customerData.getEmail());
@@ -222,6 +224,8 @@ public class CarRentalController {
 		ReservationNumber id = ReservationNumber.of(reservationNumber);
 		Reservation original = reservationRepository.findByNumber(id)
 													.orElseThrow(() -> new ReservationNotFoundException(id));
+		
+		System.out.println("\t\t\t * An order has been placed for reservation: " + id);
 		
 		return ResponseEntity.accepted().build();
 	}
