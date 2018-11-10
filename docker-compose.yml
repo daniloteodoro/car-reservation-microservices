@@ -1,0 +1,15 @@
+# http://localhost:8080
+# User: postgres
+# Password: example
+# Db: postgres
+# ps: This docker-compose copies file <project root>/init.sql to the container, which runs *.sql files on dir below
+version: '3.1'
+
+services:
+  redis:
+    image: redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    restart: always
+    ports:
+    - "6379:6379"

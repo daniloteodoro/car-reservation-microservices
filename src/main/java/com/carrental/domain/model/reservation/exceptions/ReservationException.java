@@ -1,5 +1,11 @@
-package com.carrental.domain.model.reservation;
+package com.carrental.domain.model.reservation.exceptions;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+import com.carrental.domain.model.car.exceptions.CarRentalException;
+
+@ResponseStatus(HttpStatus.BAD_REQUEST)
 public class ReservationException extends CarRentalException {
 
 	private static final long serialVersionUID = -5490248715359705416L;

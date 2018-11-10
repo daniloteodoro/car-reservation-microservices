@@ -3,7 +3,7 @@ package com.carrental.domain.model.reservation.exceptions;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.carrental.domain.model.reservation.ReservationException;
+import com.carrental.domain.model.reservation.ReservationNumber;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class ReservationNotFoundException extends ReservationException {
@@ -21,6 +21,10 @@ public class ReservationNotFoundException extends ReservationException {
 
 	public ReservationNotFoundException(String message, Throwable cause) {
 		super(message, cause);
+	}
+	
+	public ReservationNotFoundException(ReservationNumber reservation) {
+		super(String.format("Reservation not found: %s", reservation.getValue()));
 	}
 
 	public ReservationNotFoundException(String message) {

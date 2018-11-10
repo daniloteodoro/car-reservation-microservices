@@ -7,26 +7,36 @@ public class ReservationNumber implements ValueObject {
 	
 	private static final long serialVersionUID = 5407616353851887002L;
 	
-	private final String data;
+	private final String value;
 	
 	
 	public ReservationNumber(final String data) {
 		super();
-		this.data = StringUtils.requireNonEmpty(data, "Reservation Number must not be null");
+		this.value = StringUtils.requireNonEmpty(data, "Reservation Number must not be null");
 	}
 	
-	public String getData() {
-		return data;
+	public static ReservationNumber of(final String data) {
+		return new ReservationNumber(data);
+	}
+	
+	// Simple constructor for persistence and serializers
+	protected ReservationNumber() {
+		super();
+		this.value = "";
+	}
+	
+	public String getValue() {
+		return value;
 	}
 	
 	@Override
 	public String toString() {
-		return this.data;
+		return this.value;
 	}
 
 	@Override
 	public int hashCode() {
-		return data.hashCode();
+		return value.hashCode();
 	}
 	
 	@Override
@@ -39,7 +49,7 @@ public class ReservationNumber implements ValueObject {
 			return false;
 		
 		ReservationNumber other = (ReservationNumber) obj;
-		return data.equalsIgnoreCase(other.data);
+		return value.equalsIgnoreCase(other.value);
 	}
 
 }

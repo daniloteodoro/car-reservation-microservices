@@ -11,53 +11,50 @@ import com.carrental.domain.model.reservation.ReservationNumber;
 
 public class ReservationDto {
 	
-	private CarDto car;
 	private ReservationNumber reservationNumber;
-	//private Customer customer;
 	private List<ExtraProduct> extras = new ArrayList<>();
 	private InsuranceType insurance = InsuranceType.STANDARD_INSURANCE;
 	private CityDto pickupLocation;
 	private LocalDateTime pickupDateTime;
 	private CityDto dropoffLocation;
 	private LocalDateTime dropoffDateTime;
+	private CategoryDto category;
+	private Double total;
+	private CustomerDto customer;
 	
 	
-	public ReservationDto(CarDto car, ReservationNumber reservationNumber, List<ExtraProduct> extras,
-			InsuranceType insurance, CityDto pickupLocation, LocalDateTime pickupDateTime, CityDto dropoffLocation,
-			LocalDateTime dropoffDateTime) {
+	public ReservationDto(ReservationNumber reservationNumber, CategoryDto category, CustomerDto customer, List<ExtraProduct> extras, InsuranceType insurance, 
+			CityDto pickupLocation, LocalDateTime pickupDateTime, CityDto dropoffLocation, LocalDateTime dropoffDateTime, Double total) {
 		super();
-		this.car = car;
 		this.reservationNumber = reservationNumber;
+		this.category = category;
+		this.customer = customer;
 		this.extras = extras;
 		this.insurance = insurance;
 		this.pickupLocation = pickupLocation;
 		this.pickupDateTime = pickupDateTime;
 		this.dropoffLocation = dropoffLocation;
 		this.dropoffDateTime = dropoffDateTime;
+		this.total = total;
 	}
 
 	public static ReservationDto basedOn(Reservation reservation) {
-		CarDto car = CarDto.basedOn(reservation.getCar());
 		List<ExtraProduct> extras = new ArrayList<>();
 		CityDto pickupLocation = CityDto.basedOn(reservation.getPickupLocation());
 		CityDto dropoffLocation = CityDto.basedOn(reservation.getDropoffLocation());
 		
 		reservation.getExtras().forEachRemaining((item) -> extras.add(item));
 		
-		return new ReservationDto(car, reservation.getReservationNumber(), extras, reservation.getInsurance(), 
-								  pickupLocation, reservation.getPickupDateTime(), dropoffLocation, reservation.getDropoffDateTime());
+		return new ReservationDto(reservation.getReservationNumber(), CategoryDto.basedOn(reservation.getCategory()), CustomerDto.basedOn(reservation.getCustomer()), 
+								  extras, reservation.getInsurance(), pickupLocation, reservation.getPickupDateTime(), dropoffLocation, reservation.getDropoffDateTime(), 
+								  reservation.calculateTotal());
 	}
 	
-	// Simple constructor for persistence and serializers
+	// Simple constructor for ORM and serializers
 	protected ReservationDto() {
 		super();
-		this.car = null;
 	}
 	
-	public CarDto getCar() {
-		return this.car;
-	}
-
 	public ReservationNumber getReservationNumber() {
 		return reservationNumber;
 	}
@@ -84,6 +81,18 @@ public class ReservationDto {
 
 	public LocalDateTime getDropoffDateTime() {
 		return dropoffDateTime;
+	}
+
+	public CategoryDto getCategory() {
+		return category;
+	}
+
+	public Double getTotal() {
+		return total;
+	}
+
+	public CustomerDto getCustomer() {
+		return customer;
 	}
 	
 }
