@@ -22,13 +22,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.carrental.App;
 import com.carrental.application.dto.CarDto;
-import com.carrental.domain.model.car.Brand;
 import com.carrental.domain.model.car.Car;
-import com.carrental.domain.model.car.Category;
 import com.carrental.domain.model.car.LicensePlate;
-import com.carrental.domain.model.car.Model;
-import com.carrental.domain.model.reservation.City;
-import com.carrental.domain.model.reservation.Country;
+import com.carrental.shared.SampleModels;
 import com.carrental.unittest.util.GsonLocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -47,26 +43,20 @@ public class CarRentalControllerIT {
 	
 	@Test
 	public void givenTheCityOfRotterdam_whenSearchingForCars_thenOneCarIsReturned() throws Exception {
-	    mvc.perform(get("/search/rotterdam-nl")
+		
+		// http://localhost:8081/search/from/rotterdam-nl/2018-07-16 08:00/to/rotterdam-nl/2018-07-20 16:00
+		
+	    mvc.perform(get("/search/from/rotterdam-nl/2018-07-16 08:00/to/rotterdam-nl/2018-07-20 16:00")
 	      .contentType(MediaType.APPLICATION_JSON))
 	      .andExpect(status().isOk())
 	      .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-		      .andExpect(jsonPath("$[0].licensePlate.data", is("AB-1234")));
+		      .andExpect(jsonPath("$[0].car.licensePlate.data", is("AB-1234")));
 	}
 	
 	@Test
 	public void givenASearchResult_whenChoosingVWGolf_thenANewReservationIsReturned() throws Exception {
-		City rotterdam = new City(1, "rotterdam", Country.NL);
 		LicensePlate plate = new LicensePlate("AB-1234");
-		Car golf = new Car.Builder()
-					.withModel(new Model(new Brand("VW"), "Golf", Category.MEDIUMSIZED))
-					.withPickupLocation(rotterdam)
-					.withPickupDateTime(LocalDateTime.of(2018, 8, 1, 10, 00))
-					.withDropoffLocation(rotterdam)
-					.withDropoffDateTime(LocalDateTime.of(2018, 8, 31, 10, 00))
-					.withPricePerDay(40.0)
-					.withLicensePlate(plate)
-					.build();
+		Car golf = new Car(plate, SampleModels.VW_GOLF);
 		
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 									 .registerTypeAdapter(LocalDateTime.class, new GsonLocalDateTimeAdapter())

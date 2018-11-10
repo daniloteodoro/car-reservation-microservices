@@ -2,17 +2,17 @@ package com.carrental.domain.model.car;
 
 public enum ExtraProduct {
 	
-	GPS(10.0),
-	ADDITIONAL_DRIVER(12.0),
-	CHILD_SEAT(10.0);
+	GPS(new Price(10.0)),
+	ADDITIONAL_DRIVER(new Price(12.0)),
+	CHILD_SEAT(new Price(10.0));
 	
-	private final Double price;
+	private final Price price;
 	
-	ExtraProduct(Double price) {
+	ExtraProduct(Price price) {
 		this.price = price;
 	}
 	
-	public Double getPrice() {
+	public Price getPrice() {
 		return this.price;
 	}
 

@@ -1,6 +1,6 @@
 package com.carrental.domain.model.car;
 
-import com.carrental.domain.model.reservation.CarRentalException;
+import com.carrental.domain.model.car.exceptions.CarRentalException;
 
 public class CarException extends CarRentalException {
 

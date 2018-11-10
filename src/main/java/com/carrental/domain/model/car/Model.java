@@ -4,23 +4,37 @@ import java.util.Objects;
 
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import com.carrental.util.StringUtils;
 
 @Entity
+@NamedQueries({
+	@NamedQuery(name=Model.GET_EXAMPLE_MODEL_BY_CATEGORY, query="from Model m where m.category = :CATEGORY")
+})
 public class Model implements com.carrental.shared.Entity {
 	
 	private static final long serialVersionUID = 5896117340555165412L;
+	public static final String GET_EXAMPLE_MODEL_BY_CATEGORY = "getExampleModelByCategory";
 	
 	@Id
 	private final Integer id;
+	
 	@Embedded
 	private final Brand brand;
+	
+	@NotEmpty
 	private final String description;
-	@Enumerated(EnumType.STRING)
+	
+	@NotNull
+	@ManyToOne
+	@JoinColumn(name="CATEGORY_ID", nullable=false, updatable=false)
 	private final Category category;
 	
 	
@@ -46,7 +60,7 @@ public class Model implements com.carrental.shared.Entity {
 		this.id = null;
 		this.brand = null;
 		this.description = "";
-		this.category = Category.COMPACT;
+		this.category = null;
 	}
 	
 	public Brand getBrand() {

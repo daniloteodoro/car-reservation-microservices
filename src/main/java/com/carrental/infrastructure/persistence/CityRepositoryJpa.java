@@ -40,6 +40,22 @@ public class CityRepositoryJpa implements CityRepository {
 		}
 	}
 	
+	@SuppressWarnings({ "unchecked" })
+	@Override
+	public Optional<City> findByNameAndCountryCode(String cityName, String countryCode) throws CityFormatException {
+		String city = StringUtils.requireNonEmpty(cityName, () -> new CityFormatException("City name is obligatory"));
+		String country = StringUtils.requireNonEmpty(countryCode, () -> new CityFormatException("Country code is obligatory"));
+		Query query = entityManager.createQuery("from City where lower(name) like lower(:CITY) and lower(country) like lower(:COUNTRY)");
+		query.setParameter("CITY", city);
+		query.setParameter("COUNTRY", country);
+		List<City> cities = query.getResultList();
+		if (cities.isEmpty()) {
+			return Optional.empty();
+		} else {
+			return Optional.of(cities.get(0));
+		}
+	}
+	
 }
 
 

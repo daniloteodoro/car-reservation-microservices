@@ -8,6 +8,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 
 import com.carrental.domain.model.reservation.exceptions.CityFormatException;
+import com.carrental.domain.model.reservation.exceptions.CityNotFoundException;
 import com.carrental.util.StringUtils;
 
 @Entity
@@ -39,7 +40,7 @@ public class City implements com.carrental.shared.Entity {
 		this.country = Objects.requireNonNull(country, "City Country must not be null");
 	}
 	
-	// Simple constructor for persistence and serializers
+	// Simple constructor for ORM and serializers
 	protected City() {
 		super();
 		this.id = -1;
@@ -51,8 +52,9 @@ public class City implements com.carrental.shared.Entity {
 	 * Take a string in a format "<city name>-<country code>" and tries to convert to a city with a proper description and country
 	 * @param cityAndCountry string in a format 'cityName-countryCode'
 	 * @return A new city with a proper description and country
+	 * @throws CityNotFoundException 
 	 */
-	public static City parse(String cityAndCountry) {
+	public static City parse(String cityAndCountry) throws CityNotFoundException {
 		String cityStr = StringUtils.requireNonEmpty(cityAndCountry, () -> new CityFormatException("City name must not be null"));
 		int countryPos = cityStr.lastIndexOf("-") + 1;
 		if (!cityStr.contains("-")) {
@@ -65,14 +67,14 @@ public class City implements com.carrental.shared.Entity {
 			throw new CityFormatException("City name must not be null");
 		}
 		
-		String countryCode = cityStr.substring(countryPos, countryPos + COUNTRY_CODE_LENGTH);
+		String countryCode = cityStr.substring(countryPos, countryPos + COUNTRY_CODE_LENGTH).toUpperCase();
 		String cityPart = cityStr.substring(0, countryPos - 1);
 		
 		Country country;
 		try {
 			country = Country.valueOf(countryCode);
 		} catch (RuntimeException e) {
-			throw new CityFormatException(e.getMessage(), e);
+			throw new CityNotFoundException(e.getMessage(), e);
 		}
 		
 		return new City(-1, cityPart, country);		

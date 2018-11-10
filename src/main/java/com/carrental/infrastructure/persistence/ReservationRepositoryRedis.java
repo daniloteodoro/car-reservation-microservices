@@ -25,7 +25,7 @@ public class ReservationRepositoryRedis implements ReservationRepository {
 	
 	@Override
 	public Optional<Reservation> findByNumber(ReservationNumber number) {
-		return Optional.of(redisCommand.get(getReservationKey(number)));
+		return Optional.ofNullable(redisCommand.get(getReservationKey(number)));
 	}
 	
 	@Override
