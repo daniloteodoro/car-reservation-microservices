@@ -41,5 +41,13 @@ public interface Customer {
 		}
 		return new Order(reservation);
 	}
+	
+	default Boolean isValid() {
+		return !StringUtils.isEmpty(getFullName()) &&
+				!StringUtils.isEmpty(getAddress()) &&
+				!StringUtils.isEmpty(getPhoneNumber()) &&
+				!StringUtils.isEmpty(getEmail()) &&
+				(getCity() != null);
+	}
 
 }

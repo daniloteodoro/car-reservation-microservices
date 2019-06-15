@@ -30,3 +30,5 @@ target/*
 .project
 .settings/
 
+# InteliJ
+.idea

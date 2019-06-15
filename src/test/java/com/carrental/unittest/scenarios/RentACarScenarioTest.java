@@ -25,7 +25,6 @@ import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.Country;
 import com.carrental.domain.model.reservation.Order;
 import com.carrental.domain.model.reservation.Reservation;
-import com.carrental.domain.model.reservation.exceptions.CarUnavailableException;
 import com.carrental.domain.model.reservation.exceptions.ReservationException;
 import com.carrental.shared.SampleCategories;
 import com.carrental.shared.SampleModels;

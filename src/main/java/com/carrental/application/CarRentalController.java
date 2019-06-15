@@ -4,21 +4,26 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.carrental.application.dto.CustomerDto;
 import com.carrental.application.dto.ModelDto;
@@ -28,6 +33,7 @@ import com.carrental.domain.model.car.CategoryRepository;
 import com.carrental.domain.model.car.CategoryType;
 import com.carrental.domain.model.car.ExtraProduct;
 import com.carrental.domain.model.car.InsuranceType;
+import com.carrental.domain.model.car.exceptions.CarRentalRuntimeException;
 import com.carrental.domain.model.car.exceptions.CategoryNotFoundException;
 import com.carrental.domain.model.customer.Customer;
 import com.carrental.domain.model.customer.Visitor;
@@ -41,6 +47,9 @@ import com.carrental.domain.model.reservation.exceptions.CityFormatException;
 import com.carrental.domain.model.reservation.exceptions.CityNotFoundException;
 import com.carrental.domain.model.reservation.exceptions.ReservationException;
 import com.carrental.domain.model.reservation.exceptions.ReservationNotFoundException;
+import com.carrental.domain.service.CarAuthService;
+import com.carrental.domain.service.CarAuthService.CarLoginCredentials;
+import com.carrental.util.JsonUtils;
 import com.carrental.util.StringUtils;
 
 @RestController
@@ -49,15 +58,17 @@ public class CarRentalController {
 	private final ReservationRepository reservationRepository;
 	private final CityRepository cityRepository;
 	private final CategoryRepository categoryRepository;
+	private final CarAuthService carAuthService;
 	
 	
 	// TODO: Remove unused dependencies
 	@Autowired
-	public CarRentalController(ReservationRepository reservationRepository, CityRepository cityRepository, CategoryRepository categoryRepository) {
+	public CarRentalController(ReservationRepository reservationRepository, CityRepository cityRepository, CategoryRepository categoryRepository, CarAuthService carAuthService) {
 		super();
 		this.reservationRepository = reservationRepository;
 		this.cityRepository = cityRepository;
 		this.categoryRepository = categoryRepository;
+		this.carAuthService = carAuthService;
 	}
 	
 	// TODO: HATEOAS
@@ -185,7 +196,7 @@ public class CarRentalController {
 	}
 	
 	@PutMapping("/reservation/{reservationNumber}/customer-details")
-	public ResponseEntity<ReservationDto> setReservationCustomerDetails(@PathVariable String reservationNumber, @RequestBody CustomerDto customerData) throws ReservationNotFoundException, CityNotFoundException {
+	public ResponseEntity<ReservationDto> setReservationCustomerDetails(@PathVariable String reservationNumber, @RequestBody CustomerDto customerData) throws CityNotFoundException, ReservationException {
 		ReservationNumber id = ReservationNumber.of(reservationNumber);
 		Reservation original = reservationRepository.findByNumber(id)
 													.orElseThrow(() -> new ReservationNotFoundException(id));
@@ -204,7 +215,7 @@ public class CarRentalController {
 		}
 		
 		// TODO: Validate customer information
-		
+		// TODO: Create factory to generate a consistent Customer
 		Customer visitor = new Visitor();
 		visitor.setFullName(customerData.getFullName());
 		visitor.setEmail(customerData.getEmail());
@@ -219,19 +230,65 @@ public class CarRentalController {
 		return ResponseEntity.ok(ReservationDto.basedOn(original));
 	}
 	
+	// TODO: Review URLs
 	@PostMapping("/reservation/{reservationNumber}/confirm")
-	public ResponseEntity<ReservationDto> confirmReservation(@PathVariable String reservationNumber) throws ReservationNotFoundException {
+	public ResponseEntity<String> confirmReservation(@PathVariable String reservationNumber) throws ReservationException {
 		ReservationNumber id = ReservationNumber.of(reservationNumber);
 		Reservation original = reservationRepository.findByNumber(id)
 													.orElseThrow(() -> new ReservationNotFoundException(id));
 		
-		System.out.println("\t\t\t * An order has been placed for reservation: " + id);
+		if (original.getCustomer() == null)
+			throw new ReservationException("No customer associated to the reservation");
+		if (!original.getCustomer().isValid())
+			throw new ReservationException("Please fill in Customer details before confirming the reservation");
 		
-		return ResponseEntity.accepted().build();
+		System.out.println("\t\t\t * Placing order for reservation: " + id);
+		
+		Map<String, String> uriVariables = new HashMap<>();
+		String json = "{\n" + 
+				"	\"username\": \"GUEST\",\n" + 
+				"	\"password\": \"guest\"\n" + 
+				"}";
+		
+		// TODO: Where to place tokens, create object above?
+		// Get token
+		String response = "";
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<String> authRequest = new HttpEntity<>(json, headers);
+		ResponseEntity<String> responseEntity;
+		try {
+			//responseEntity = new RestTemplate().postForEntity("http://localhost:8085/login", authRequest, String.class);
+			//response = responseEntity.getBody();
+			response = carAuthService.login(new CarLoginCredentials("guest", "guest"));
+		} catch (Exception e) {
+			throw new CarRentalRuntimeException("Fail to login to create order: "+e.getMessage());
+		}
+		
+		if (response == null || !response.startsWith("Bearer "))
+			throw new CarRentalRuntimeException("Fail to authenticate to complete order process - order was not generated");
+
+		headers.set("Authorization", response);
+		
+		HttpEntity<String> orderRequest = new HttpEntity<>(JsonUtils.toJson(id), headers);
+		
+		try {
+			responseEntity = 
+					new RestTemplate().postForEntity("http://localhost:8086/orders", orderRequest, String.class, uriVariables);
+		} catch (Exception e) {
+			throw new CarRentalRuntimeException("Failure calling order service: "+e.getMessage());
+		}
+		response = responseEntity.getBody();
+		
+		System.out.println("Order has been placed!");
+		
+		// TODO: Mark current reservation as read-only  - Now we have a distributed transaction challenge :)
+		
+		return ResponseEntity.accepted().body(response);
 	}
-
+	
 }
-
 
 
 

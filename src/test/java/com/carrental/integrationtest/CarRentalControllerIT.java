@@ -46,7 +46,7 @@ public class CarRentalControllerIT {
 		
 		// http://localhost:8081/search/from/rotterdam-nl/2018-07-16 08:00/to/rotterdam-nl/2018-07-20 16:00
 		
-	    mvc.perform(get("/search/from/rotterdam-nl/2018-07-16 08:00/to/rotterdam-nl/2018-07-20 16:00")
+	    mvc.perform(get("/search/from/rotterdam-nl/2018-07-04 08:00/to/rotterdam-nl/2018-07-05 16:30")
 	      .contentType(MediaType.APPLICATION_JSON))
 	      .andExpect(status().isOk())
 	      .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))

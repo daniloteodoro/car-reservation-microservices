@@ -12,6 +12,7 @@ import com.carrental.domain.model.car.Category;
 import com.carrental.domain.model.car.ExtraProduct;
 import com.carrental.domain.model.car.InsuranceType;
 import com.carrental.domain.model.customer.Customer;
+import com.carrental.domain.model.reservation.exceptions.ReservationException;
 import com.carrental.shared.Entity;
 
 /***
@@ -95,7 +96,9 @@ public class Reservation implements Entity, Comparable<Reservation> {
 		this.insurance = insurance;
 	}
 	
-	public void setCustomer(Customer customer) {
+	public void setCustomer(Customer customer) throws ReservationException {
+		if (customer == null || !customer.isValid())
+			throw new ReservationException("Cannot set a null or invalid customer to reservation");
 		this.customer = customer;
 	}
 	
