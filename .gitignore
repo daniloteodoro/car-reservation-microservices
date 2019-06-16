@@ -32,3 +32,6 @@ target/*
 
 # InteliJ
 .idea
+
+# car reservation db files
+docker/car_reservation

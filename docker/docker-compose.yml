@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+
+  db:
+    image: postgres:11-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: reservation
+      POSTGRES_USER: reservation_user
+      POSTGRES_PASSWORD: u$er_fcf!
+    ports:
+      - "5432:5432"
+    network_mode: "host"
+    volumes:
+      - ./car_reservation/data:/var/lib/postgresql/data
+#      - ./car_reservation/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    volumes:
+      - ./car_reservation/data:/var/lib/postgresql/data
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=dev
+      - PGADMIN_DEFAULT_PASSWORD=dev
+      - PGADMIN_LISTEN_PORT=8089
+    network_mode: "host"
