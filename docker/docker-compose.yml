@@ -14,13 +14,14 @@ services:
     network_mode: "host"
     volumes:
       - ./car_reservation/data:/var/lib/postgresql/data
-#      - ./car_reservation/init.sql:/docker-entrypoint-initdb.d/init.sql
+#      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   pgadmin:
     image: dpage/pgadmin4
     restart: always
     volumes:
       - ./car_reservation/data:/var/lib/postgresql/data
+      - ./servers.json:/pgadmin4/servers.json
     environment:
       - PGADMIN_DEFAULT_EMAIL=dev
       - PGADMIN_DEFAULT_PASSWORD=dev
