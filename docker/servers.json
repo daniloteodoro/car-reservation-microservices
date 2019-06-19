@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "car_reservation",
+      "Group": "Servers",
+      "Host": "127.0.0.1",
+      "Port": 5432,
+      "MaintenanceDB": "reservation",
+      "Username": "reservation_user",
+      "SSLMode": "prefer"
+    }
+  }
+}
