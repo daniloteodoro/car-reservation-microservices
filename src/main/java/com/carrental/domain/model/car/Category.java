@@ -19,13 +19,13 @@ import com.carrental.domain.model.car.exceptions.CarRentalRuntimeException;
 	@NamedQuery(name=Category.GET_ALL_CATEGORIES, query="select c from Category c order by c.type"),
 	@NamedQuery(name=Category.GET_CATEGORY_BY_TYPE, query="select c from Category c where c.type = :TYPE"),
 })
-public class Category implements  com.carrental.shared.Entity {
+public class Category implements com.carrental.shared.Entity {
 	
 	private static final long serialVersionUID = -6083285778312724846L;
 	public static final String GET_ALL_CATEGORIES = "getAllCategories";
 	public static final String GET_CATEGORY_BY_TYPE = "getCategoryByType";
 	public static final String GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION =
-					"select * " + 
+					"select * " +
 					"  from category c " + 
 					" where c.CATEGORY_TYPE not in" + 
 					"  ( "+

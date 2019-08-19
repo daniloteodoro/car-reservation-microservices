@@ -11,18 +11,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import com.carrental.application.dto.CustomerDto;
@@ -36,7 +33,6 @@ import com.carrental.domain.model.car.InsuranceType;
 import com.carrental.domain.model.car.exceptions.CarRentalRuntimeException;
 import com.carrental.domain.model.car.exceptions.CategoryNotFoundException;
 import com.carrental.domain.model.customer.Customer;
-import com.carrental.domain.model.customer.Visitor;
 import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.CityRepository;
 import com.carrental.domain.model.reservation.Reservation;
@@ -52,7 +48,9 @@ import com.carrental.domain.service.CarAuthService.CarLoginCredentials;
 import com.carrental.util.JsonUtils;
 import com.carrental.util.StringUtils;
 
+@CrossOrigin
 @RestController
+@Api(value = "/reservations", tags = "Reservation", description = "Handles car searches and creates reservations.")
 public class CarRentalController {
 	
 	private final ReservationRepository reservationRepository;
@@ -62,6 +60,7 @@ public class CarRentalController {
 	
 	
 	// TODO: Remove unused dependencies
+
 	@Autowired
 	public CarRentalController(ReservationRepository reservationRepository, CityRepository cityRepository, CategoryRepository categoryRepository, CarAuthService carAuthService) {
 		super();
@@ -71,44 +70,36 @@ public class CarRentalController {
 		this.carAuthService = carAuthService;
 	}
 	
-	// TODO: HATEOAS
 	/***
-	 * Handles calls using the following example: http://localhost:8081/search/from/rotterdam-nl/2018-07-16 08:00/to/rotterdam-nl/2018-07-20 16:00
+	 * Handles calls using the following format: http://localhost:8081/search/from/<city_origin>/<start_datetime>/to/<city_destiny>/<end_datetime>
+	 *   For example: http://localhost:8081/search/from/rotterdam-nl/2018-07-16 08:00/to/rotterdam-nl/2018-07-20 16:00
 	 * @param origin Represents a city name followed by its country code
 	 * @param start Represents the search's start date
 	 * @param destiny Represents a city name followed by its country code
 	 * @param finish Represents the search's end date
-	 * @return <s> A list of cars</s> A list of categories
+	 * @return A list of categories
 	 * @throws CityNotFoundException In case the API could not find the city (404 status code)
 	 */
+	@ApiOperation("Returns available categories (model?) based on city and date/time requirements")
 	@GetMapping("/search/from/{from}/{start}/to/{to}/{finish}")
-	public List<ModelDto> searchCars(
+	public List<ModelDto> searchAvailableCategories(
 			@PathVariable("from") String origin, 
 			@PathVariable("start") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime start, 
 			@PathVariable("to") String destiny, 
 			@PathVariable("finish") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime finish) throws CityNotFoundException {
 		
-		City pickupLocation;
-		City dropoffLocation;
-		try {
-			pickupLocation = cityRepository.findByNameAndCountryCode(origin)
-									 .orElseThrow(() -> new CityNotFoundException(String.format("Origin city %s not found", origin)));
-			dropoffLocation = cityRepository.findByNameAndCountryCode(destiny)
-					 				 .orElseThrow(() -> new CityNotFoundException(String.format("Destiny city %s not found", destiny)));
-		} catch (CityFormatException e) {
-			e.printStackTrace();
-			throw e;
-		} catch (CityNotFoundException e) {
-			e.printStackTrace();
-			throw e;
-		}
-		
+		City pickupLocation = cityRepository.findByNameAndCountryCode(origin)
+				.orElseThrow(() -> new CityNotFoundException(String.format("Origin city %s not found", origin)));
+		City dropoffLocation = cityRepository.findByNameAndCountryCode(destiny)
+				.orElseThrow(() -> new CityNotFoundException(String.format("Destiny city %s not found", destiny)));
+
 		// TODO: Add timezone based on pick-up / drop-off location.
-		
-		List<ModelDto> availableCategories = 
-				categoryRepository.availableOn(pickupLocation, start, dropoffLocation, finish).stream()
-				.map((model) -> ModelDto.basedOn(model))
-				.collect(Collectors.toList());
+
+		List<ModelDto> availableCategories =
+				categoryRepository.availableOn(pickupLocation, start, dropoffLocation, finish)
+						.stream()
+						.map( model -> ModelDto.basedOn(model) )
+						.collect(Collectors.toList());
 		
 		return availableCategories;
 	}
@@ -122,9 +113,8 @@ public class CarRentalController {
 			@PathVariable("category") String category
 			) throws URISyntaxException, CityNotFoundException, CategoryNotFoundException, CarUnavailableException {
 		
-		Customer visitor = new Visitor();
-		visitor.setFullName("Temp name");
-		
+		Customer visitor = Customer.EMPTY;
+
 		City pickupLocation;
 		City dropoffLocation;
 		try {
@@ -216,7 +206,7 @@ public class CarRentalController {
 		
 		// TODO: Validate customer information
 		// TODO: Create factory to generate a consistent Customer
-		Customer visitor = new Visitor();
+		Customer visitor = Customer.EMPTY;
 		visitor.setFullName(customerData.getFullName());
 		visitor.setEmail(customerData.getEmail());
 		visitor.setPhoneNumber(customerData.getPhoneNumber());

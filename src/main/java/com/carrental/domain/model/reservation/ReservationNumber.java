@@ -3,10 +3,15 @@ package com.carrental.domain.model.reservation;
 import com.carrental.shared.ValueObject;
 import com.carrental.util.StringUtils;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+
+@Embeddable
 public class ReservationNumber implements ValueObject {
 	
 	private static final long serialVersionUID = 5407616353851887002L;
-	
+
+	@Column(name="reservation_number", nullable=false)
 	private final String value;
 	
 	

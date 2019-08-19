@@ -4,9 +4,9 @@ import com.carrental.domain.model.car.Model;
 
 public class ModelDto {
 	
-	private String brand;
-	private String description;
-	private CategoryDto category;
+	private final String brand;
+	private final String description;
+	private final CategoryDto category;
 	
 	
 	public ModelDto(String brand, String description, CategoryDto category) {

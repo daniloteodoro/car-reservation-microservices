@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+import com.carrental.domain.model.reservation.*;
+import com.carrental.domain.model.reservation.exceptions.ExtraProductUnavailableException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,14 +22,10 @@ import com.carrental.domain.model.car.CategoryRepository;
 import com.carrental.domain.model.car.ExtraProduct;
 import com.carrental.domain.model.car.InsuranceType;
 import com.carrental.domain.model.customer.Customer;
-import com.carrental.domain.model.customer.Visitor;
-import com.carrental.domain.model.reservation.City;
-import com.carrental.domain.model.reservation.Country;
-import com.carrental.domain.model.reservation.Order;
-import com.carrental.domain.model.reservation.Reservation;
 import com.carrental.domain.model.reservation.exceptions.ReservationException;
 import com.carrental.shared.SampleCategories;
 import com.carrental.shared.SampleModels;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /***
@@ -45,6 +43,9 @@ public class RentACarScenarioTest {
 	
 	@Mock
 	private CategoryRepository categoryRepository;
+
+	@Autowired
+	private ExtraProductRepository extraProductRepository;
 	
 	/***
 	 * 1. A visitor searches for cars in Rotterdam for the period of: 03/07/2018 to 08/07/2018 (dd/MM/yyyy)
@@ -56,7 +57,7 @@ public class RentACarScenarioTest {
 	 * @throws ReservationException 
 	 */
 	@Test
-	public void testCompleteRentalProcess() throws ReservationException {
+	public void testCompleteRentalProcess() throws ReservationException, ExtraProductUnavailableException {
 		
 		// TODO: Check for Factories, Repositories, and Services
 		
@@ -69,7 +70,7 @@ public class RentACarScenarioTest {
 		
 		List<CategoryFeaturingModel> foundCategories = Arrays.asList(new CategoryFeaturingModel(SampleCategories.MEDIUMSIZED_CATEGORY, SampleModels.VW_GOLF));
 		//when(carRepository.categoryBasedOn(rotterdam, start, rotterdam, finish)).thenReturn(foundCategories);
-		Customer visitor = new Visitor();
+		Customer visitor = Customer.EMPTY;
 		
 		// 1. A visitor searches for cars in Rotterdam for the period of: 03/07/2018 to 08/07/2018 (dd/MM/yyyy)
 		// TODO: Fix tests
@@ -92,7 +93,7 @@ public class RentACarScenarioTest {
 		/* Second thought: Making changes on cars that will later be discarded seemed incorrect. Changed to reservation */
 		
 		// 3. He/she chooses "Additional Driver" as extra (total reservation price becomes EUR 260.00)
-		reservation.addExtraProduct(ExtraProduct.ADDITIONAL_DRIVER);
+		reservation.addExtraProduct(extraProductRepository.findByName("Additional Driver").orElseThrow(() -> new ExtraProductUnavailableException()));
 		assertThat(reservation.calculateTotal(), is(260.0));
 		
 		// 4. When the visitor is prompted to choose the insurance type, they go for a Full Insurance (0.0 EUR to pay for damages), in a total quote price of EUR 350.00

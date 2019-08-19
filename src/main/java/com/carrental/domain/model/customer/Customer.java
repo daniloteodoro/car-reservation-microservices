@@ -10,28 +10,41 @@ import com.carrental.domain.model.reservation.exceptions.CarUnavailableException
 import com.carrental.domain.model.reservation.exceptions.ReservationException;
 import com.carrental.util.StringUtils;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+
 /***
- * Represents a person booking a reservation, which could be a visitor or a registered customer.
+ * Represents a person booking a reservation.
  * @author Danilo Teodoro
  *
  */
-public interface Customer {
-	
-	String getFullName();
-	String getEmail();
-	String getPhoneNumber();
-	String getAddress();
-	City getCity();
-	
-	void setFullName(String fullName);
-	void setEmail(String email);
-	void setPhoneNumber(String phoneNumber);
-	void setAddress(String address);
-	void setCity(City city);
-	
-	Reservation select(Category category, City pickupPoint, LocalDateTime start, City dropOffPoint, LocalDateTime finish) throws CarUnavailableException;
-	
-	default Order payAtStore(Reservation reservation) throws ReservationException {
+@Entity
+public class Customer implements com.carrental.shared.Entity {
+
+	private static final long serialVersionUID = -7213890863182901666L;
+
+	@Id
+	private Long id = null;
+	private String fullName = "";
+	private String email = "";
+	private String phoneNumber = "";
+	private String address = "";
+	@ManyToOne
+	private City city = null;
+
+	public static final Customer EMPTY = new Customer();
+
+	protected Customer() {
+		super();
+	}
+
+	public Reservation select(Category category, City pickupPoint, LocalDateTime start, City dropOffPoint, LocalDateTime finish) throws CarUnavailableException {
+		Reservation newReservation = new Reservation(this, category, pickupPoint, start, dropOffPoint, finish);
+		return newReservation;
+	}
+
+	public Order payAtStore(Reservation reservation) throws ReservationException {
 		StringUtils.requireNonEmpty(getFullName(), () -> new ReservationException("Full name is required before paying"));
 		StringUtils.requireNonEmpty(getAddress(), () -> new ReservationException("Address is required before paying"));
 		StringUtils.requireNonEmpty(getPhoneNumber(), () -> new ReservationException("Phone Number is required before paying"));
@@ -41,8 +54,8 @@ public interface Customer {
 		}
 		return new Order(reservation);
 	}
-	
-	default Boolean isValid() {
+
+	public Boolean isValid() {
 		return !StringUtils.isEmpty(getFullName()) &&
 				!StringUtils.isEmpty(getAddress()) &&
 				!StringUtils.isEmpty(getPhoneNumber()) &&
@@ -50,4 +63,66 @@ public interface Customer {
 				(getCity() != null);
 	}
 
+	@Override
+	public String toString() {
+		return String.format("%d: %s", this.id, this.fullName);
+	}
+
+	@Override
+	public int hashCode() {
+		return id.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+
+		Customer other = (Customer) obj;
+		return id.equals(other.id);
+	}
+
+	public String getFullName() {
+		return fullName;
+	}
+
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public City getCity() {
+		return city;
+	}
+
+	public void setCity(City city) {
+		this.city = city;
+	}
 }
