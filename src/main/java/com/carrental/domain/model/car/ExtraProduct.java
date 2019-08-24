@@ -25,14 +25,6 @@ public class ExtraProduct {
 		this.price = price;
 	}
 
-	public Long getId() {
-		return id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
 	public Price getPrice() {
 		return price;
 	}

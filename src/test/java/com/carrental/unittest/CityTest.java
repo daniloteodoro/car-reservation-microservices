@@ -9,32 +9,32 @@ import org.junit.Test;
 import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.Country;
 import com.carrental.domain.model.reservation.exceptions.CityFormatException;
-import com.carrental.domain.model.reservation.exceptions.CityNotFoundException;
+import com.carrental.domain.model.reservation.exceptions.InvalidCityException;
 
 public class CityTest {
 	
 	@Test
-	public void testValidCityAndCountry() throws CityNotFoundException {
+	public void testValidCityAndCountry() throws InvalidCityException {
 		String validFormat = "rotterdam-nl";
 		City validCity = City.parse(validFormat);
 		assertThat(validCity.toString(), is(equalTo("rotterdam")));
 		assertThat(validCity.getCountry(), is(equalTo(Country.NL)));
 	}
 	
-	@Test(expected=CityNotFoundException.class)
-	public void testValidCityWithInvalidCountry() throws CityNotFoundException {
+	@Test(expected= InvalidCityException.class)
+	public void testValidCityWithInvalidCountry() throws InvalidCityException {
 		String validFormat = "rotterdam-ZZ";
 		City.parse(validFormat);
 	}
 	
 	@Test(expected=CityFormatException.class)
-	public void testValidCityWithoutCountry() throws CityNotFoundException {
+	public void testValidCityWithoutCountry() throws InvalidCityException {
 		String validFormat = "rotterdam-";
 		City.parse(validFormat);
 	}
 	
 	@Test(expected=CityFormatException.class)
-	public void testNonValidInput() throws CityNotFoundException {
+	public void testNonValidInput() throws InvalidCityException {
 		String validFormat = "rotterdam";
 		City.parse(validFormat);
 	}
