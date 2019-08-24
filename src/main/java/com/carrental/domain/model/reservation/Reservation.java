@@ -13,7 +13,8 @@ import com.carrental.domain.model.car.ExtraProduct;
 import com.carrental.domain.model.car.InsuranceType;
 import com.carrental.domain.model.customer.Customer;
 import com.carrental.domain.model.reservation.exceptions.ReservationException;
-import com.carrental.shared.Entity;
+
+import javax.persistence.*;
 
 /***
  * A reservation (or booking?) represents a car occupied (not available for new rentals) by a customer during a certain period.
@@ -22,19 +23,29 @@ import com.carrental.shared.Entity;
  */
 
 // TODO: Enforce invariants
-public class Reservation implements Entity, Comparable<Reservation> {
-	
-	private static final long serialVersionUID = -7213890863182901666L;
-	
+@Entity
+public class Reservation implements com.carrental.shared.Entity, Comparable<Reservation> {
+
+    @Id
+    private Integer id;
+	@Embedded
 	private ReservationNumber reservationNumber;
+	@ManyToOne
 	private Customer customer;
+	@ManyToOne
 	private Category category;
+	@ManyToMany
 	private Set<ExtraProduct> extras = new HashSet<>();
+	@Enumerated(EnumType.STRING)
 	private InsuranceType insurance = InsuranceType.STANDARD_INSURANCE;
+	@ManyToOne
 	private City pickupLocation;
-	private LocalDateTime pickupDateTime;
+	@ManyToOne
 	private City dropoffLocation;
+
+	private LocalDateTime pickupDateTime;
 	private LocalDateTime dropoffDateTime;
+	
 	// TODO: Reservation date/time + expired convenience method?
 	
 	// TODO: Create Builder
@@ -176,6 +187,7 @@ public class Reservation implements Entity, Comparable<Reservation> {
 	}
 	
 	@Override
+	// TODO: Finish implementation
 	public int compareTo(Reservation another) {
 		return this.pickupDateTime.compareTo(another.pickupDateTime);
 	}

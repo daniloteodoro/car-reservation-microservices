@@ -1,15 +1,14 @@
 package com.carrental.domain.model.reservation;
 
-import java.util.Objects;
+import com.carrental.domain.model.reservation.exceptions.CityFormatException;
+import com.carrental.domain.model.reservation.exceptions.InvalidCityException;
+import com.carrental.util.StringUtils;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
-
-import com.carrental.domain.model.reservation.exceptions.CityFormatException;
-import com.carrental.domain.model.reservation.exceptions.CityNotFoundException;
-import com.carrental.util.StringUtils;
+import java.util.Objects;
 
 @Entity
 public class City implements com.carrental.shared.Entity {
@@ -52,9 +51,9 @@ public class City implements com.carrental.shared.Entity {
 	 * Take a string in a format "<city name>-<country code>" and tries to convert to a city with a proper description and country
 	 * @param cityAndCountry string in a format 'cityName-countryCode'
 	 * @return A new city with a proper description and country
-	 * @throws CityNotFoundException 
+	 * @throws InvalidCityException
 	 */
-	public static City parse(String cityAndCountry) throws CityNotFoundException {
+	public static City parse(String cityAndCountry) throws InvalidCityException {
 		String cityStr = StringUtils.requireNonEmpty(cityAndCountry, () -> new CityFormatException("City name must not be null"));
 		int countryPos = cityStr.lastIndexOf("-") + 1;
 		if (!cityStr.contains("-")) {
@@ -74,7 +73,7 @@ public class City implements com.carrental.shared.Entity {
 		try {
 			country = Country.valueOf(countryCode);
 		} catch (RuntimeException e) {
-			throw new CityNotFoundException(e.getMessage(), e);
+			throw new InvalidCityException(e.getMessage(), e);
 		}
 		
 		return new City(-1, cityPart, country);		

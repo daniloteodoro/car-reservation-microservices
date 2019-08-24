@@ -1,22 +1,20 @@
 package com.carrental.infrastructure.persistence;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import com.carrental.domain.model.car.Category;
+import com.carrental.domain.model.car.CategoryAvailability;
+import com.carrental.domain.model.car.CategoryRepository;
+import com.carrental.domain.model.car.CategoryType;
+import com.carrental.domain.model.reservation.City;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
-
-import com.carrental.domain.model.car.Category;
-import com.carrental.domain.model.car.CategoryRepository;
-import com.carrental.domain.model.car.CategoryType;
-import com.carrental.domain.model.car.Model;
-import com.carrental.domain.model.reservation.City;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class CategoryRepositoryJpa implements CategoryRepository {
@@ -50,55 +48,18 @@ public class CategoryRepositoryJpa implements CategoryRepository {
 			return Optional.of(results.get(0));
 		}
 	}
-	
-	private Optional<Model> getExampleModelByCategory(Category category) {
-		TypedQuery<Model> query = entityManager.createNamedQuery(Model.GET_EXAMPLE_MODEL_BY_CATEGORY, Model.class);
-		query.setParameter("CATEGORY", category);
-		
-		List<Model> results = query.setMaxResults(1).getResultList();
-		
-		if (results.isEmpty()) {
-			return Optional.empty();
-		} else {
-			return Optional.of(results.get(0));
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
+
 	@Override
-	public List<Model> availableOn(City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation, LocalDateTime dropoffDateTime) {
-		List<Model> availableModel = new ArrayList<>();
-		
-		Query query = entityManager.createNativeQuery(Category.GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION, Category.class);
-		query.setParameter("END_DATE", dropoffDateTime);
+	public List<CategoryAvailability> getCategoryAvailability(City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime) {
+
+		List<CategoryAvailability> result = new ArrayList<>();
+
+		// Query query = entityManager.createNativeQuery(Category.GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION, Tuple.class);
+        Query query = entityManager.createNativeQuery(CategoryAvailability.GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION, CategoryAvailability.CATEGORY_AVAILABILITY_MAPPING);
+		query.setParameter("END_DATE", dropOffDateTime);
 		query.setParameter("START_DATE", pickupDateTime);
-		
-		List<Category> categories = query.getResultList();
-		
-		Optional<Model> foundModel;
-		for (Category current : categories) {
-			foundModel = getExampleModelByCategory(current);
-			if (foundModel.isPresent()) {
-				availableModel.add(foundModel.get());
-			}
-		}
-		
-		return availableModel;
+
+		return query.getResultList();
 	}
-	
-	
 	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

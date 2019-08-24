@@ -8,6 +8,9 @@ import static org.junit.Assert.assertThat;
 
 import java.time.LocalDateTime;
 
+import com.carrental.domain.model.customer.Customer;
+import com.carrental.domain.model.reservation.ExtraProductRepository;
+import com.carrental.domain.model.reservation.exceptions.ExtraProductUnavailableException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,12 +20,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import com.carrental.domain.model.car.ExtraProduct;
 import com.carrental.domain.model.car.InsuranceType;
 import com.carrental.domain.model.car.LicensePlate;
-import com.carrental.domain.model.customer.Visitor;
 import com.carrental.domain.model.reservation.City;
 import com.carrental.domain.model.reservation.Reservation;
 import com.carrental.domain.model.reservation.exceptions.CarUnavailableException;
 import com.carrental.domain.model.reservation.exceptions.ReservationException;
 import com.carrental.shared.SampleCategories;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReservationTest {
@@ -32,6 +35,9 @@ public class ReservationTest {
 	
 	@Mock
 	private LicensePlate someLicensePlate;
+
+	@Autowired
+	private ExtraProductRepository extraProductRepository;
 	
 	
 	@Test(expected=CarUnavailableException.class)
@@ -40,7 +46,7 @@ public class ReservationTest {
 		LocalDateTime finish = LocalDateTime.of(2018, 9, 2, 10, 00);
 		
 		// Date of the reservation does not fit into the period the car will be available.
-		new Reservation(new Visitor(), SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
+		new Reservation(Customer.EMPTY, SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
 	}
 	
 	@Test
@@ -48,29 +54,29 @@ public class ReservationTest {
 		LocalDateTime start = LocalDateTime.of(2018, 8, 10, 10, 00);
 		LocalDateTime finish = LocalDateTime.of(2018, 8, 15, 10, 00);
 		
-		Reservation reservation = new Reservation(new Visitor(), SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
+		Reservation reservation = new Reservation(Customer.EMPTY, SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
 		
 		assertThat(reservation.calculateTotal(), is(equalTo(200.0)));
 	}
 	
 	@Test
-	public void testTotalFor5DaysReservationWithAdditionalDriver() throws ReservationException {
+	public void testTotalFor5DaysReservationWithAdditionalDriver() throws ReservationException, ExtraProductUnavailableException {
 		LocalDateTime start = LocalDateTime.of(2018, 8, 10, 10, 00);
 		LocalDateTime finish = LocalDateTime.of(2018, 8, 15, 10, 00);
 
-		Reservation reservation = new Reservation(new Visitor(), SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
-		reservation.addExtraProduct(ExtraProduct.ADDITIONAL_DRIVER);
+		Reservation reservation = new Reservation(Customer.EMPTY, SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
+		reservation.addExtraProduct(extraProductRepository.findByName("Additional Driver").orElseThrow(() -> new ExtraProductUnavailableException()));
 
 		assertThat(reservation.calculateTotal(), is(equalTo(260.0)));
 	}
 	
 	@Test
-	public void testTotalFor5DaysReservationWithAdditionalDriverAndFullInsurance() throws ReservationException {
+	public void testTotalFor5DaysReservationWithAdditionalDriverAndFullInsurance() throws ReservationException, ExtraProductUnavailableException {
 		LocalDateTime start = LocalDateTime.of(2018, 8, 10, 10, 00);
 		LocalDateTime finish = LocalDateTime.of(2018, 8, 15, 10, 00);
 		
-		Reservation reservation = new Reservation(new Visitor(), SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
-		reservation.addExtraProduct(ExtraProduct.ADDITIONAL_DRIVER);
+		Reservation reservation = new Reservation(Customer.EMPTY, SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
+		reservation.addExtraProduct(extraProductRepository.findByName("Additional Driver").orElseThrow(() -> new ExtraProductUnavailableException()));
 		reservation.setInsurance(InsuranceType.FULL_INSURANCE);
 		
 		assertThat(reservation.calculateTotal(), is(equalTo(350.0)));
@@ -91,8 +97,8 @@ public class ReservationTest {
 		LocalDateTime start = LocalDateTime.of(2018, 8, 10, 10, 00);
 		LocalDateTime finish = LocalDateTime.of(2018, 8, 15, 10, 00);
 		
-		Reservation r1 = new Reservation(new Visitor(), SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
-		Reservation r2 = new Reservation(new Visitor(), SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
+		Reservation r1 = new Reservation(Customer.EMPTY, SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
+		Reservation r2 = new Reservation(Customer.EMPTY, SampleCategories.MEDIUMSIZED_CATEGORY, someCity, start, someCity, finish);
 		
 		assertThat(r1, is(equalTo(r1)));
 		assertThat(r1, is(not(equalTo(r2))));
