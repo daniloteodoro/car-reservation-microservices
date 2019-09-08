@@ -1,9 +1,6 @@
 package com.reservation.infrastructure.persistence;
 
-import com.reservation.domain.model.car.Category;
-import com.reservation.domain.model.car.CategoryAvailability;
-import com.reservation.domain.model.car.CategoryRepository;
-import com.reservation.domain.model.car.CategoryType;
+import com.reservation.domain.model.car.*;
 import com.reservation.domain.model.reservation.City;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -15,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class CategoryRepositoryJpa implements CategoryRepository {
@@ -50,16 +48,28 @@ public class CategoryRepositoryJpa implements CategoryRepository {
 	}
 
 	@Override
-	public List<CategoryAvailability> getCategoryAvailability(City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime) {
+	public List<CategoryAvailability> getCategoryAvailabilities(City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime) {
 
-		List<CategoryAvailability> result = new ArrayList<>();
+		List<CategoryWithReservationInfo> categoriesFromDb = new ArrayList<>();
 
 		// Query query = entityManager.createNativeQuery(Category.GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION, Tuple.class);
-        Query query = entityManager.createNativeQuery(CategoryAvailability.GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION, CategoryAvailability.CATEGORY_AVAILABILITY_MAPPING);
+        Query query = entityManager.createNativeQuery(CategoryWithReservationInfo.GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION, CategoryWithReservationInfo.CATEGORY_AVAILABILITY_MAPPING);
 		query.setParameter("END_DATE", dropOffDateTime);
 		query.setParameter("START_DATE", pickupDateTime);
 
-		return query.getResultList();
+		categoriesFromDb = query.getResultList();
+
+		return categoriesFromDb.stream()
+				.map(original -> new CategoryAvailability(original, pickupLocation, dropOffLocation, pickupDateTime, dropOffDateTime))
+				.collect(Collectors.toList());
 	}
-	
+
+	@Override
+	public Optional<CategoryAvailability> getCategoryAvailabilityFor(CategoryType type, City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime) {
+		List<CategoryAvailability> categories = getCategoryAvailabilities(pickupLocation, pickupDateTime, dropOffLocation, dropOffDateTime);
+		return categories.stream()
+				.filter(cat -> cat.getType() == type)
+				.findFirst();
+	}
+
 }

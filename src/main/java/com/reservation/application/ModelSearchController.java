@@ -1,32 +1,14 @@
 package com.reservation.application;
 
-import com.reservation.application.dto.CustomerDto;
 import com.reservation.application.dto.ModelDto;
-import com.reservation.application.dto.ReservationDto;
-import com.reservation.domain.model.car.*;
-import com.reservation.domain.model.car.exceptions.CarRentalRuntimeException;
-import com.reservation.domain.model.car.exceptions.CategoryNotFoundException;
-import com.reservation.domain.model.customer.Customer;
 import com.reservation.domain.model.reservation.*;
 import com.reservation.domain.model.reservation.exceptions.*;
-import com.reservation.domain.service.CarAuthService;
-import com.reservation.domain.service.CarAuthService.CarLoginCredentials;
 import com.reservation.domain.service.ModelService;
-import com.reservation.util.JsonUtils;
-import com.reservation.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;

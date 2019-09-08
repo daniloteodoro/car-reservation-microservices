@@ -3,7 +3,7 @@ package com.reservation.domain.model.car;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
-import com.reservation.shared.ValueObject;
+import com.reservation.domain.model.shared.ValueObject;
 import com.reservation.util.StringUtils;
 
 @Embeddable

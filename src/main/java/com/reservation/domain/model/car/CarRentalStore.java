@@ -3,7 +3,7 @@ package com.reservation.domain.model.car;
 import java.util.Objects;
 
 import com.reservation.domain.model.reservation.City;
-import com.reservation.shared.ValueObject;
+import com.reservation.domain.model.shared.ValueObject;
 import com.reservation.util.StringUtils;
 
 public final class CarRentalStore implements ValueObject {

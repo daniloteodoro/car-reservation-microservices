@@ -15,7 +15,7 @@ import javax.persistence.ManyToOne;
  *
  */
 @Entity
-public class Car implements com.reservation.shared.Entity {
+public class Car implements com.reservation.domain.model.shared.Entity {
 	
 	private static final long serialVersionUID = 4404795652514822852L;
 	

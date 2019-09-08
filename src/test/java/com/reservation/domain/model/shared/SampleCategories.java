@@ -1,4 +1,4 @@
-package com.reservation.shared;
+package com.reservation.domain.model.shared;
 
 import com.reservation.domain.model.car.CarPrice;
 import com.reservation.domain.model.car.Category;

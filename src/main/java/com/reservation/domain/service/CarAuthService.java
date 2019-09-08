@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name="car-rental-auth", url="localhost:8085")
 public interface CarAuthService {
 	
-	class CarLoginCredentials {
+	class CarLoginCredentialsDto {
 		private String username;
 		private String password;
 		
 		
-		public CarLoginCredentials(String username, String password) {
+		public CarLoginCredentialsDto(String username, String password) {
 			super();
 			this.username = username;
 			this.password = password;
@@ -33,6 +33,6 @@ public interface CarAuthService {
 	}
 	
 	@PostMapping("/login")
-	String login(@RequestBody CarLoginCredentials credentials);
+	String login(@RequestBody CarLoginCredentialsDto credentials);
 
 }

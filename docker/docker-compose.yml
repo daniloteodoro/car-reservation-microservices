@@ -7,11 +7,11 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: reservation
-      POSTGRES_USER: reservation_user
-      POSTGRES_PASSWORD: u$er_fcf!
+      POSTGRES_USER: rental
+      POSTGRES_PASSWORD: u_e_sij489sakijdsafidjf
     ports:
-      - "5432:5432"
-    network_mode: "host"
+      - 5432:5432
+    network_mode: host
     volumes:
       - ./car_reservation/data:/var/lib/postgresql/data
 #      - ./init.sql:/docker-entrypoint-initdb.d/init.sql

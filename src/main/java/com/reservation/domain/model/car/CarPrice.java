@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 import com.reservation.domain.model.car.exceptions.InvalidPriceException;
-import com.reservation.shared.ValueObject;
+import com.reservation.domain.model.shared.ValueObject;
 
 @Embeddable
 public class CarPrice implements ValueObject {

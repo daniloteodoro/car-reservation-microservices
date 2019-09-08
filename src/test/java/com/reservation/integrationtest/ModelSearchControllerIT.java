@@ -24,7 +24,7 @@ import com.reservation.App;
 import com.reservation.application.dto.CarDto;
 import com.reservation.domain.model.car.Car;
 import com.reservation.domain.model.car.LicensePlate;
-import com.reservation.shared.SampleModels;
+import com.reservation.domain.model.shared.SampleModels;
 import com.reservation.unittest.util.GsonLocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

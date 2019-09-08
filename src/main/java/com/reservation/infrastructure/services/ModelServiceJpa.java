@@ -1,4 +1,4 @@
-package com.reservation.infrastructure;
+package com.reservation.infrastructure.services;
 
 import com.reservation.domain.model.car.CategoryAvailability;
 import com.reservation.domain.model.car.CategoryRepository;
@@ -28,11 +28,11 @@ public class ModelServiceJpa implements ModelService {
         List<Model> availableModels = new ArrayList<>();
 
         List<CategoryAvailability> availableCategories =
-                categoryRepository.getCategoryAvailability(pickupLocation, pickupDateTime, dropOffLocation, dropOffDateTime);
+                categoryRepository.getCategoryAvailabilities(pickupLocation, pickupDateTime, dropOffLocation, dropOffDateTime);
 
         for (CategoryAvailability current : availableCategories) {
             if (current.isAvailable()) {
-                modelRepository.findFirstModelByCategory(current.getCategory())
+                modelRepository.findFirstModelByCategory(current.getCategoryWithReservationInfo().getCategory())
                         .ifPresent(availableModels::add);
             }
         }

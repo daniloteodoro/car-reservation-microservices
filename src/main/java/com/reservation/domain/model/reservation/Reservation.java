@@ -9,78 +9,83 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.reservation.domain.model.car.Category;
+import com.reservation.domain.model.car.CategoryAvailability;
 import com.reservation.domain.model.car.ExtraProduct;
 import com.reservation.domain.model.car.InsuranceType;
 import com.reservation.domain.model.customer.Customer;
+import com.reservation.domain.model.reservation.exceptions.CategoryUnavailableException;
+import com.reservation.domain.model.reservation.exceptions.ReservationAlreadyConfirmedException;
 import com.reservation.domain.model.reservation.exceptions.ReservationException;
 
 import javax.persistence.*;
 
 /***
- * A reservation (or booking?) represents a car occupied (not available for new rentals) by a customer during a certain period.
+ * A reservation (or booking?) represents a car in a category being used (not available for new rentals) by a customer during a certain period in a given location.
  * @author Danilo Teodoro
  *
  */
 
-// TODO: Enforce invariants
 @Entity
-public class Reservation implements com.reservation.shared.Entity, Comparable<Reservation> {
+public class Reservation implements com.reservation.domain.model.shared.Entity, Comparable<Reservation> {
 
-    @Id
-    private Integer id;
-	@Embedded
+	private static final long serialVersionUID = -4965748075816786448L;
+
+	@EmbeddedId
 	private ReservationNumber reservationNumber;
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Customer customer;
 	@ManyToOne
 	private Category category;
-	@ManyToMany
+
+	@ElementCollection(targetClass = ExtraProduct.class)
+	@CollectionTable(
+			name = "RESERVATION_EXTRAPRODUCT",
+			joinColumns = @JoinColumn(name = "reservation_id")
+	)
+	@Column(name = "extra_product")
+	@Enumerated(value = EnumType.STRING)
 	private Set<ExtraProduct> extras = new HashSet<>();
+
 	@Enumerated(EnumType.STRING)
 	private InsuranceType insurance = InsuranceType.STANDARD_INSURANCE;
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	private City pickupLocation;
-	@ManyToOne
-	private City dropoffLocation;
+	@ManyToOne(cascade = CascadeType.ALL)
+	private City dropOffLocation;
 
 	private LocalDateTime pickupDateTime;
-	private LocalDateTime dropoffDateTime;
+	private LocalDateTime dropOffDateTime;
+
+	private final LocalDateTime createdAt = LocalDateTime.now();
+	private LocalDateTime confirmedAt;
+	private OrderId order;
 	
 	// TODO: Reservation date/time + expired convenience method?
 	
 	// TODO: Create Builder
-	public Reservation(Customer customer, Category category, City pickupLocation, LocalDateTime pickupDateTime, City dropoffLocation, LocalDateTime dropoffDateTime)  {
+
+	protected Reservation() {
+		super();
+		// used only by ORMs and serializers
+	}
+
+	// Cars available in a certain category, for a given location and period =>
+	public Reservation(Customer customer, CategoryAvailability category) throws CategoryUnavailableException {
 		super();
 		
 		Objects.requireNonNull(customer, "Invalid customer");
 		Objects.requireNonNull(category, "Invalid category");
-		Objects.requireNonNull(pickupLocation, "Invalid pickup location");
-		Objects.requireNonNull(pickupDateTime, "Invalid pickup date/time");
-		Objects.requireNonNull(dropoffLocation, "Invalid drop-off location");
-		Objects.requireNonNull(dropoffDateTime, "Invalid drop-off date/time");
-		
-		// TODO: Do we need this check (and here)?  -> Create factory to return reservation and test for this
-		/*
-		if (!((Car)category).isAvailable(pickupLocation, pickupDateTime, dropoffLocation, dropoffDateTime)) {
-			throw new CarUnavailableException();
-		}
-		*/
+
+		category.checkAvailable();
+
 		this.customer = customer;
-		this.category = category;
-		this.pickupLocation = pickupLocation;
-		this.pickupDateTime = pickupDateTime;
-		this.dropoffLocation = dropoffLocation;
-		this.dropoffDateTime = dropoffDateTime;
-		
+		this.category = category.getCategoryWithReservationInfo().getCategory();
+		this.pickupLocation = category.getPickupLocation();
+		this.pickupDateTime = category.getPickupDateTime();
+		this.dropOffLocation = category.getDropOffLocation();
+		this.dropOffDateTime = category.getDropOffDateTime();
+
 		this.reservationNumber = new ReservationNumber(UUID.randomUUID().toString());
-	}
-	
-	public Category getCategory() {
-		return category;
-	}
-	
-	public Customer getCustomer() {
-		return customer;
 	}
 	
 	public void addExtraProduct(ExtraProduct extra) {
@@ -89,45 +94,14 @@ public class Reservation implements com.reservation.shared.Entity, Comparable<Re
 			this.extras.add(extra);
 		}
 	}
-	
+
 	public void clearExtras() {
 		this.extras.clear();
 	}
-	
+
 	public void removeExtraProduct(ExtraProduct extra) {
 		Objects.requireNonNull(extra, "Extra product must not be null");
 		this.extras.remove(extra);
-	}
-	
-	public Iterator<ExtraProduct> getExtras() {
-		return extras.iterator();
-	}
-	
-	public void setInsurance(InsuranceType insurance) {
-		this.insurance = insurance;
-	}
-	
-	public void setCustomer(Customer customer) throws ReservationException {
-		if (customer == null || !customer.isValid())
-			throw new ReservationException("Cannot set a null or invalid customer to reservation");
-		this.customer = customer;
-	}
-	
-	public City getPickupLocation() {
-		return pickupLocation;
-	}
-	public LocalDateTime getPickupDateTime() {
-		return pickupDateTime;
-	}
-	public City getDropoffLocation() {
-		return dropoffLocation;
-	}
-	public LocalDateTime getDropoffDateTime() {
-		return dropoffDateTime;
-	}
-	
-	public InsuranceType getInsurance() {
-		return insurance;
 	}
 	
 	public Double getTotalForInsurance() {
@@ -155,14 +129,78 @@ public class Reservation implements com.reservation.shared.Entity, Comparable<Re
 	}
 	
 	public Long getAmountOfDays() {
-		Long rentalDays = ChronoUnit.DAYS.between(pickupDateTime.toLocalDate(), dropoffDateTime.toLocalDate());
+		Long rentalDays = ChronoUnit.DAYS.between(pickupDateTime.toLocalDate(), dropOffDateTime.toLocalDate());
 		return rentalDays;
 	}
 	
+	public OrderId confirm(ConfirmableReservation onConfirmReservation) throws ReservationException {
+		if (getCustomer().isAnonymous())
+			throw new ReservationException("No customer associated to this reservation");
+		if (isConfirmed())
+			throw new ReservationException("This reservation has already been confirmed");
+
+		OrderId newOrder;
+		try {
+			newOrder = onConfirmReservation.submit(this);
+		} catch (ReservationAlreadyConfirmedException e) {
+			newOrder = e.getOrderId();
+		}
+
+		if (this.insurance == InsuranceType.FULL_INSURANCE) {
+			throw new ReservationException(" ** Test exception **");
+		}
+
+		this.confirmedAt = LocalDateTime.now();
+		this.order = newOrder;
+
+		return this.order;
+	}
+
+	public boolean isConfirmed() {
+		return confirmedAt != null;
+	}
+
+	// Simple getters and setters
 	public ReservationNumber getReservationNumber() {
 		return reservationNumber;
 	}
-	
+	public LocalDateTime getCreatedAt() { return createdAt;	}
+	public LocalDateTime getConfirmedAt() { return confirmedAt; }
+	public OrderId getOrder() { return order; }
+	public Category getCategory() {
+		return category;
+	}
+	public Customer getCustomer() {
+		return customer;
+	}
+	public Iterator<ExtraProduct> getExtras() {
+		return extras.iterator();
+	}
+	public City getPickupLocation() {
+		return pickupLocation;
+	}
+	public LocalDateTime getPickupDateTime() {
+		return pickupDateTime;
+	}
+	public City getDropOffLocation() {
+		return dropOffLocation;
+	}
+	public LocalDateTime getDropOffDateTime() {
+		return dropOffDateTime;
+	}
+	public InsuranceType getInsurance() {
+		return insurance;
+	}
+
+	public void setInsurance(InsuranceType insurance) {
+		this.insurance = insurance;
+	}
+	public void setCustomer(Customer customer) throws ReservationException {
+		if (customer == null)
+			throw new ReservationException("Cannot set a null or invalid customer to reservation");
+		this.customer = customer;
+	}
+
 	@Override
 	public int hashCode() {
 		return reservationNumber.hashCode();
@@ -194,8 +232,3 @@ public class Reservation implements com.reservation.shared.Entity, Comparable<Re
 
 	
 }
-
-
-
-
-

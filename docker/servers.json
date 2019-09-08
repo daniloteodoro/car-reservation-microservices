@@ -6,7 +6,18 @@
       "Host": "127.0.0.1",
       "Port": 5432,
       "MaintenanceDB": "reservation",
-      "Username": "reservation_user",
+      "Username": "rental",
+      "Password": "u_e_sij489sakijdsafidjf",
+      "SSLMode": "prefer"
+    },
+    "2": {
+      "Name": "car_rental",
+      "Group": "Servers",
+      "Host": "127.0.0.1",
+      "Port": 5432,
+      "MaintenanceDB": "rental",
+      "Username": "rental",
+      "Password": "u_e_sij489sakijdsafidjf",
       "SSLMode": "prefer"
     }
   }

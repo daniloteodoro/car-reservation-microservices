@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.reservation.shared.ValueObject;
+import com.reservation.domain.model.shared.ValueObject;
 
 // Design decision to have this object as a read-only list with some convenient	methods
 public class AvailableCarList extends AbstractList<Car> implements ValueObject, List<Car> {

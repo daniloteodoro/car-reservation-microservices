@@ -41,12 +41,12 @@ public class ReservationDto {
 	public static ReservationDto basedOn(Reservation reservation) {
 		List<ExtraProduct> extras = new ArrayList<>();
 		CityDto pickupLocation = CityDto.basedOn(reservation.getPickupLocation());
-		CityDto dropoffLocation = CityDto.basedOn(reservation.getDropoffLocation());
+		CityDto dropoffLocation = CityDto.basedOn(reservation.getDropOffLocation());
 		
 		reservation.getExtras().forEachRemaining((item) -> extras.add(item));
 		
 		return new ReservationDto(reservation.getReservationNumber(), CategoryDto.basedOn(reservation.getCategory()), CustomerDto.basedOn(reservation.getCustomer()), 
-								  extras, reservation.getInsurance(), pickupLocation, reservation.getPickupDateTime(), dropoffLocation, reservation.getDropoffDateTime(), 
+								  extras, reservation.getInsurance(), pickupLocation, reservation.getPickupDateTime(), dropoffLocation, reservation.getDropOffDateTime(),
 								  reservation.calculateTotal());
 	}
 	

@@ -3,6 +3,7 @@ package com.reservation.domain.model.car;
 import com.reservation.domain.model.car.exceptions.CarRentalRuntimeException;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 @Entity
@@ -11,10 +12,10 @@ import java.util.Objects;
 		@NamedQuery(name=Category.GET_CATEGORY_BY_TYPE, query="select c from Category c where c.type = :TYPE"),
 })
 @SqlResultSetMapping(
-		name = CategoryAvailability.CATEGORY_AVAILABILITY_MAPPING,
+		name = CategoryWithReservationInfo.CATEGORY_AVAILABILITY_MAPPING,
 		classes = {
 				@ConstructorResult(
-						targetClass = CategoryAvailability.class,
+						targetClass = CategoryWithReservationInfo.class,
 						columns = {
 								@ColumnResult(name = "category_type", type = String.class),
 								@ColumnResult(name = "price", type = Double.class),
@@ -25,7 +26,7 @@ import java.util.Objects;
 						}
 				)
 		})
-public class Category implements com.reservation.shared.Entity {
+public class Category implements com.reservation.domain.model.shared.ValueObject {
 
 	private static final long serialVersionUID = -6083285778312724846L;
 	public static final String GET_ALL_CATEGORIES = "getAllCategories";
@@ -33,18 +34,21 @@ public class Category implements com.reservation.shared.Entity {
 
 	@Id
 	@Enumerated(EnumType.STRING)
-	@Column(name="CATEGORY_TYPE")
+	@Column(name="CATEGORY_TYPE", nullable = false)
 	private final CategoryType type;
 	
 	@Embedded
+	@NotNull
 	@AttributeOverride(name="value", column=@Column(name="PRICE"))
 	private final CarPrice pricePerDay;
 	
 	@Embedded
+	@NotNull
 	@AttributeOverride(name="value", column=@Column(name="STANDARD_INSURANCE"))
 	private final Price standardInsurance;
 	
 	@Embedded
+	@NotNull
 	@AttributeOverride(name="value", column=@Column(name="FULL_INSURANCE"))
 	private final Price fullInsurance;
 
@@ -52,9 +56,9 @@ public class Category implements com.reservation.shared.Entity {
 	public Category(final CategoryType type, final CarPrice pricePerDay, final Price standardInsurance, final Price fullInsurance) {
 		super();
 		this.type = Objects.requireNonNull(type, "Category type must not be null.");
-		this.pricePerDay = pricePerDay;
-		this.standardInsurance = standardInsurance;
-		this.fullInsurance = fullInsurance;
+		this.pricePerDay = Objects.requireNonNull(pricePerDay, "Category's price per day must not be null.");
+		this.standardInsurance = Objects.requireNonNull(standardInsurance, "Category's standard insurance must not be null.");
+		this.fullInsurance = Objects.requireNonNull(fullInsurance, "Category's full insurance must not be null.");
 	}
 	
 	// Simple constructor for ORM and serializers

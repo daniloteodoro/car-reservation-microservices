@@ -1,6 +1,6 @@
 package com.reservation.domain.model.car;
 
-import com.reservation.shared.ValueObject;
+import com.reservation.domain.model.shared.ValueObject;
 
 public class CategoryFeaturingModel implements ValueObject {
 	

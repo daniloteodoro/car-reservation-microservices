@@ -2,13 +2,7 @@ package com.reservation.domain.model.car;
 
 import java.util.Objects;
 
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -18,12 +12,13 @@ import com.reservation.util.StringUtils;
 @NamedQueries({
 	@NamedQuery(name=Model.GET_EXAMPLE_MODEL_BY_CATEGORY, query="from Model m where m.category = :CATEGORY")
 })
-public class Model implements com.reservation.shared.Entity {
+public class Model implements com.reservation.domain.model.shared.Entity {
 	
 	private static final long serialVersionUID = 5896117340555165412L;
 	public static final String GET_EXAMPLE_MODEL_BY_CATEGORY = "getExampleModelByCategory";
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private final Integer id;
 	
 	@Embedded

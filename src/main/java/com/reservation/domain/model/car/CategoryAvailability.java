@@ -1,58 +1,81 @@
 package com.reservation.domain.model.car;
 
+import com.reservation.domain.model.customer.Customer;
+import com.reservation.domain.model.reservation.City;
+import com.reservation.domain.model.reservation.Reservation;
+import com.reservation.domain.model.reservation.exceptions.CategoryUnavailableException;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
 
 /***
- * One projection of com.reservation.domain.model.car.Category containing information about total vehicles reserved and total vehicles available
+ * Represents a car category like COMPACT for a given location and period, and can answer whether it's available to be reserved or not.
  */
 public class CategoryAvailability {
 
-    public static final String CATEGORY_AVAILABILITY_MAPPING = "CategoryAvailabilityMapping";
-    public static final String GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION =
-            "select c.category_type, c.full_insurance, c.price, c.standard_insurance, coalesce(available.total, 0) as total, coalesce(reservations.amount, 0) as total_reserved \n" +
-                    "from category c\n" +
-                    "left join (select m.category_id, count(*) as total\n" +
-                    "from car c\n" +
-                    "inner join model m on m.id = c.model_id\n" +
-                    "group by m.category_id) available on available.category_id = c.category_type\n" +
-                    "left join (select r.category_category_type, count(*) as amount\n" +
-                    "from reservation r\n" +
-                    "where ((:START_DATE between r.pickupdatetime and r.dropoffdatetime) or\n" +
-                    "(:END_DATE between r.pickupdatetime and r.dropoffdatetime) or\n" +
-                    "(:START_DATE <= r.pickupdatetime and :END_DATE >= r.dropoffdatetime))\n" +
-                    "group by r.category_category_type) reservations\n" +
-                    "on reservations.category_category_type = c.category_type\n"+
-                    "order by c.category_type";
-
-    private final Category category;
-    private final Integer total;
-    private final Integer totalReserved;
+    private final CategoryWithReservationInfo categoryWithReservationInfo;
+    private final City pickupLocation;
+    private final City dropOffLocation;
+    private final LocalDateTime pickupDateTime;
+    private final LocalDateTime dropOffDateTime;
 
 
-    public CategoryAvailability(String type, Double pricePerDay, Double standardInsurance, Double fullInsurance, Integer total, Integer totalReserved) {
-        this.category = new Category(CategoryType.valueOf(type), new CarPrice(pricePerDay), new Price(standardInsurance), new Price(fullInsurance));
-        this.total = total;
-        this.totalReserved = totalReserved;
+    public CategoryAvailability(CategoryWithReservationInfo categoryWithReservationInfo, City pickupLocation, City dropOffLocation, LocalDateTime pickupDateTime, LocalDateTime dropOffDateTime) {
+        super();
+
+        Objects.requireNonNull(categoryWithReservationInfo, "Invalid category");
+        Objects.requireNonNull(pickupLocation, "Invalid pickup location");
+        Objects.requireNonNull(pickupDateTime, "Invalid pickup date/time");
+        Objects.requireNonNull(dropOffLocation, "Invalid drop-off location");
+        Objects.requireNonNull(dropOffDateTime, "Invalid drop-off date/time");
+
+        this.categoryWithReservationInfo = categoryWithReservationInfo;
+        this.pickupLocation = pickupLocation;
+        this.dropOffLocation = dropOffLocation;
+        this.pickupDateTime = pickupDateTime;
+        this.dropOffDateTime = dropOffDateTime;
     }
 
     public boolean isAvailable() {
         return getTotalAvailable() > 0;
     }
 
-    public int getTotalAvailable() {
-        int available = getTotal() - getTotalReserved();
-        return available >= 0 ? available : 0;
+    public void checkAvailable() throws CategoryUnavailableException {
+        if (!this.isAvailable())
+            throw new CategoryUnavailableException(String.format("Category '%s' is not available for reservation", getType()));
     }
 
-    public Category getCategory() {
-        return category;
+    private int getTotalAvailable() {
+        int available = categoryWithReservationInfo.getTotal() - categoryWithReservationInfo.getTotalReserved();
+        return Math.max(available, 0);
     }
 
-    public Integer getTotal() {
-        return total;
+    public CategoryWithReservationInfo getCategoryWithReservationInfo() {
+        return categoryWithReservationInfo;
     }
 
-    public Integer getTotalReserved() {
-        return totalReserved;
+    public City getPickupLocation() {
+        return pickupLocation;
     }
 
+    public City getDropOffLocation() {
+        return dropOffLocation;
+    }
+
+    public LocalDateTime getPickupDateTime() {
+        return pickupDateTime;
+    }
+
+    public LocalDateTime getDropOffDateTime() {
+        return dropOffDateTime;
+    }
+
+    public CategoryType getType() {
+        return categoryWithReservationInfo.getCategory().getType();
+    }
+
+    public Reservation reserve(Customer visitor) throws CategoryUnavailableException {
+        checkAvailable();
+        return new Reservation(visitor, this);
+    }
 }

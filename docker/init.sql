@@ -7,6 +7,9 @@ delete from City;
 
 -- Sample cities
 insert into City (id, country, name)
+values (-1, 'UNKNOWN', 'Unknown');
+
+insert into City (id, country, name)
 values (1, 'NL', 'Rotterdam');
 
 insert into City (id, country, name)
@@ -53,33 +56,26 @@ values ('DE-8271', 102);
 
 
 -- Sample customers
-insert into Customer (id, fullName, email, phoneNumber, address, zipCode, city)
-values (500, '(Car Rental)', 'adm@carrental.com', '12-2345-82828', 'Street X, 888', '1234 AB', 1);
+insert into Customer (id, fullName, email, phoneNumber, address, city_id)
+values (-1, 'Unknown', '(N/A)', '(N/A)', '(N/A)', -1);
 
-insert into Customer (id, fullName, email, city)
-values (501, 'Customer #2', 'customer2@email.com', 3);
-
-insert into Customer (id, fullName, email, city)
-values (502, 'Customer #3', 'customer3@email.com', 1);
+insert into Customer (id, fullName, email, phoneNumber, address, city_id)
+values (500, '(Car Rental)', 'adm@carrental.com', '12-2345-82828', 'Street X, 888', 1);
 
 
 -- Sample Reservations
-insert into Reservation (reservationNumber, customer, car, insurance, pickupLocation, pickupDateTime, dropofflocation, dropoffDateTime)
-values ('65a1bec3-73e9-4b48-844c-020f9ff2b897', 502, 'AB-1234', 'STANDARD_INSURANCE', 1, '2018-07-01 08:00:00', 1, '2018-07-03 16:00:00');
-
-insert into Reservation (reservationNumber, customer, car, insurance, pickupLocation, pickupDateTime, dropofflocation, dropoffDateTime)
-values ('95a627d4-31b7-457e-85a0-26337b1501c1', 501, 'CD-4431', 'FULL_INSURANCE', 1, '2018-07-07 08:00:00', 1, '2018-07-14 16:00:00');
-
-insert into Reservation (reservationNumber, customer, car, insurance, pickupLocation, pickupDateTime, dropofflocation, dropoffDateTime)
-values ('31e47ae3-c764-4bc8-9415-70d3a6bcb4e5', 500, 'AB-1234', 'STANDARD_INSURANCE', 1, '2018-07-15 08:00:00', 1, '2018-07-15 18:00:00');
-
-insert into Reservation (reservationNumber, customer, car, insurance, pickupLocation, pickupDateTime, dropofflocation, dropoffDateTime)
-values ('7991b9c5-99b0-4fe0-bf97-392441d27c91', 501, 'AB-1234', 'FULL_INSURANCE', 1, '2018-07-16 08:00:00', 1, '2018-07-20 18:00:00');
-
-insert into Reservation (reservationNumber, customer, car, insurance, pickupLocation, pickupDateTime, dropofflocation, dropoffDateTime)
-values ('441ed396-eadd-4bde-abab-2d0aa9bae118', 502, 'DE-8271', 'STANDARD_INSURANCE', 1, '2018-07-29 08:00:00', 1, '2018-08-02 15:00:00');
-
-
-
-
+--insert into Reservation (reservationNumber, customer, car, insurance, pickupLocation, pickupDateTime, dropofflocation, dropoffDateTime)
+--values ('65a1bec3-73e9-4b48-844c-020f9ff2b897', 502, 'AB-1234', 'STANDARD_INSURANCE', 1, '2018-07-01 08:00:00', 1, '2018-07-03 16:00:00');
+--
+--insert into Reservation (reservationNumber, customer, car, insurance, pickupLocation, pickupDateTime, dropofflocation, dropoffDateTime)
+--values ('95a627d4-31b7-457e-85a0-26337b1501c1', 501, 'CD-4431', 'FULL_INSURANCE', 1, '2018-07-07 08:00:00', 1, '2018-07-14 16:00:00');
+--
+--insert into Reservation (reservationNumber, customer, car, insurance, pickupLocation, pickupDateTime, dropofflocation, dropoffDateTime)
+--values ('31e47ae3-c764-4bc8-9415-70d3a6bcb4e5', 500, 'AB-1234', 'STANDARD_INSURANCE', 1, '2018-07-15 08:00:00', 1, '2018-07-15 18:00:00');
+--
+--insert into Reservation (reservationNumber, customer, car, insurance, pickupLocation, pickupDateTime, dropofflocation, dropoffDateTime)
+--values ('7991b9c5-99b0-4fe0-bf97-392441d27c91', 501, 'AB-1234', 'FULL_INSURANCE', 1, '2018-07-16 08:00:00', 1, '2018-07-20 18:00:00');
+--
+--insert into Reservation (reservationNumber, customer, car, insurance, pickupLocation, pickupDateTime, dropofflocation, dropoffDateTime)
+--values ('441ed396-eadd-4bde-abab-2d0aa9bae118', 502, 'DE-8271', 'STANDARD_INSURANCE', 1, '2018-07-29 08:00:00', 1, '2018-08-02 15:00:00');
 

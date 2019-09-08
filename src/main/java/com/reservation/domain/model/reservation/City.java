@@ -4,28 +4,32 @@ import com.reservation.domain.model.reservation.exceptions.CityFormatException;
 import com.reservation.domain.model.reservation.exceptions.InvalidCityException;
 import com.reservation.util.StringUtils;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 @Entity
-public class City implements com.reservation.shared.Entity {
-	
+public class City implements com.reservation.domain.model.shared.ValueObject {
+
 	private static final long serialVersionUID = 6858119231143736985L;
 	private static final int COUNTRY_CODE_LENGTH = 2;
-	
+	private static final long UNKNOWN_CITY_ID = -1;
+
 	@Id
-	private final Integer id;
-	
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	private final Long id;
+
+	@NotNull
+	@Column(nullable = false)
 	private final String name;
-	
+
+	@NotNull
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private final Country country;
-	
-	
-	public City(Integer id, String name, Country country) {
+
+
+	public City(Long id, String name, Country country) {
 		super();
 		this.id = Objects.requireNonNull(id, "City id must not be null");
 		this.name = StringUtils.requireNonEmpty(name, "City name must not be null");
@@ -34,7 +38,7 @@ public class City implements com.reservation.shared.Entity {
 	
 	public City(String name, Country country) {
 		super();
-		this.id = -1;
+		this.id = UNKNOWN_CITY_ID;
 		this.name = StringUtils.requireNonEmpty(name, "City name must not be null");
 		this.country = Objects.requireNonNull(country, "City Country must not be null");
 	}
@@ -42,11 +46,17 @@ public class City implements com.reservation.shared.Entity {
 	// Simple constructor for ORM and serializers
 	protected City() {
 		super();
-		this.id = -1;
+		this.id = UNKNOWN_CITY_ID;
 		this.name = "";
-		this.country = Country.NL;
+		this.country = Country.UNKNOWN;
 	}
-	
+
+	public static City EMPTY = new City("Unknown", Country.UNKNOWN);
+
+	public boolean isEmpty() {
+		return this == EMPTY;
+	}
+
 	/***
 	 * Take a string in a format "<city name>-<country code>" and tries to convert to a city with a proper description and country
 	 * @param cityAndCountry string in a format 'cityName-countryCode'
@@ -54,6 +64,7 @@ public class City implements com.reservation.shared.Entity {
 	 * @throws InvalidCityException
 	 */
 	public static City parse(String cityAndCountry) throws InvalidCityException {
+		// TODO: Do the following via regular expression
 		String cityStr = StringUtils.requireNonEmpty(cityAndCountry, () -> new CityFormatException("City name must not be null"));
 		int countryPos = cityStr.lastIndexOf("-") + 1;
 		if (!cityStr.contains("-")) {
@@ -76,7 +87,7 @@ public class City implements com.reservation.shared.Entity {
 			throw new InvalidCityException(e.getMessage(), e);
 		}
 		
-		return new City(-1, cityPart, country);		
+		return new City(UNKNOWN_CITY_ID, cityPart, country);
 	}
 	
 	public String getName() {
@@ -110,7 +121,7 @@ public class City implements com.reservation.shared.Entity {
 		return this.id.equals(other.id);
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 	

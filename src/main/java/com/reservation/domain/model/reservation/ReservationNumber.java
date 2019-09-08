@@ -1,15 +1,16 @@
 package com.reservation.domain.model.reservation;
 
-import com.reservation.shared.ValueObject;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.reservation.util.StringUtils;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import com.reservation.domain.model.shared.ValueObject;
 
 @Embeddable
 public class ReservationNumber implements ValueObject {
-	
-	private static final long serialVersionUID = 5407616353851887002L;
+
+	private static final long serialVersionUID = 6850717883493619865L;
 
 	@Column(name="reservation_number", nullable=false)
 	private final String value;
@@ -29,7 +30,8 @@ public class ReservationNumber implements ValueObject {
 		super();
 		this.value = "";
 	}
-	
+
+	@JsonValue
 	public String getValue() {
 		return value;
 	}
