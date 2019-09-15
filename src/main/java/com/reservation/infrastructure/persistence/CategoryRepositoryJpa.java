@@ -50,17 +50,16 @@ public class CategoryRepositoryJpa implements CategoryRepository {
 	@Override
 	public List<CategoryAvailability> getCategoryAvailabilities(City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime) {
 
-		List<CategoryWithReservationInfo> categoriesFromDb = new ArrayList<>();
+		List<CategoryWithReservationInfo> categoriesWithTotals;
 
-		// Query query = entityManager.createNativeQuery(Category.GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION, Tuple.class);
         Query query = entityManager.createNativeQuery(CategoryWithReservationInfo.GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION, CategoryWithReservationInfo.CATEGORY_AVAILABILITY_MAPPING);
 		query.setParameter("END_DATE", dropOffDateTime);
 		query.setParameter("START_DATE", pickupDateTime);
 
-		categoriesFromDb = query.getResultList();
+		categoriesWithTotals = query.getResultList();
 
-		return categoriesFromDb.stream()
-				.map(original -> new CategoryAvailability(original, pickupLocation, dropOffLocation, pickupDateTime, dropOffDateTime))
+		return categoriesWithTotals.stream()
+				.map(original -> new CategoryAvailability(original.getCategory(), pickupLocation, dropOffLocation, pickupDateTime, dropOffDateTime, original.getTotal(), original.getTotalReserved()))
 				.collect(Collectors.toList());
 	}
 
@@ -68,7 +67,7 @@ public class CategoryRepositoryJpa implements CategoryRepository {
 	public Optional<CategoryAvailability> getCategoryAvailabilityFor(CategoryType type, City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime) {
 		List<CategoryAvailability> categories = getCategoryAvailabilities(pickupLocation, pickupDateTime, dropOffLocation, dropOffDateTime);
 		return categories.stream()
-				.filter(cat -> cat.getType() == type)
+				.filter(cat -> cat.getInformation().getType() == type)
 				.findFirst();
 	}
 

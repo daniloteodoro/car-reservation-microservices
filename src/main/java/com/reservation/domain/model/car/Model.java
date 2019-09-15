@@ -61,22 +61,19 @@ public class Model implements com.reservation.domain.model.shared.Entity {
 	public Brand getBrand() {
 		return brand;
 	}
-	
 	public Category getCategory() {
 		return category;
 	}
-	
 	public String getDescription() {
 		return description;
 	}
-
 	public Integer getId() {
 		return id;
 	}
 	
 	@Override
 	public String toString() {
-		return this.description;
+		return String.format("%s %s", this.brand, this.description);
 	}
 	
 	@Override
@@ -97,9 +94,4 @@ public class Model implements com.reservation.domain.model.shared.Entity {
 		return this.id.equals(other.id);
 	}
 
-
 }
-
-
-
-

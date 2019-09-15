@@ -26,9 +26,15 @@ import java.util.Objects;
 						}
 				)
 		})
-public class Category implements com.reservation.domain.model.shared.ValueObject {
+/**
+ * Represents a category of models that a customer can rent, e.g. Compact (Fiesta, Corsa, Clio, etc)
+ * The category itself could have been modelled as a Value Object, but there are also associated information that could
+ * change, such as Prices.
+ */
+public class Category implements com.reservation.domain.model.shared.Entity {
 
-	private static final long serialVersionUID = -6083285778312724846L;
+	private static final long serialVersionUID = -3207483314736276184L;
+
 	public static final String GET_ALL_CATEGORIES = "getAllCategories";
 	public static final String GET_CATEGORY_BY_TYPE = "getCategoryByType";
 
@@ -36,20 +42,20 @@ public class Category implements com.reservation.domain.model.shared.ValueObject
 	@Enumerated(EnumType.STRING)
 	@Column(name="CATEGORY_TYPE", nullable = false)
 	private final CategoryType type;
-	
-	@Embedded
+
 	@NotNull
-	@AttributeOverride(name="value", column=@Column(name="PRICE"))
+	@Embedded
+	@AttributeOverride(name="value", column=@Column(name="PRICE", nullable = false))
 	private final CarPrice pricePerDay;
-	
-	@Embedded
+
 	@NotNull
-	@AttributeOverride(name="value", column=@Column(name="STANDARD_INSURANCE"))
+	@Embedded
+	@AttributeOverride(name="value", column=@Column(name="STANDARD_INSURANCE", nullable = false))
 	private final Price standardInsurance;
-	
-	@Embedded
+
 	@NotNull
-	@AttributeOverride(name="value", column=@Column(name="FULL_INSURANCE"))
+	@Embedded
+	@AttributeOverride(name="value", column=@Column(name="FULL_INSURANCE", nullable = false))
 	private final Price fullInsurance;
 
 
@@ -82,21 +88,10 @@ public class Category implements com.reservation.domain.model.shared.ValueObject
 		}
 	}
 	
-	public CategoryType getType() {
-		return type;
-	}
-	
-	public CarPrice getPricePerDay() {
-		return pricePerDay;
-	}
-	
-	public Price getStandardInsurance() {
-		return standardInsurance;
-	}
-	
-	public Price getFullInsurance() {
-		return fullInsurance;
-	}
+	public CategoryType getType() { return type; }
+	public CarPrice getPricePerDay() { return pricePerDay; }
+	public Price getStandardInsurance() { return standardInsurance; }
+	public Price getFullInsurance() { return fullInsurance;	}
 
 	@Override
 	public String toString() {
@@ -122,4 +117,3 @@ public class Category implements com.reservation.domain.model.shared.ValueObject
 	}
 	
 }
-

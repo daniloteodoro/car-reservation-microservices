@@ -12,7 +12,6 @@ import com.reservation.domain.model.car.Category;
 import com.reservation.domain.model.customer.Customer;
 import com.reservation.domain.model.reservation.City;
 import com.reservation.domain.model.reservation.Reservation;
-import com.reservation.domain.model.reservation.ReservationAvailability;
 
 public class ReservationAvailabilityTest {
 	

@@ -2,11 +2,7 @@ package com.reservation.domain.model.reservation;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import com.reservation.domain.model.car.Category;
 import com.reservation.domain.model.car.CategoryAvailability;
@@ -18,6 +14,7 @@ import com.reservation.domain.model.reservation.exceptions.ReservationAlreadyCon
 import com.reservation.domain.model.reservation.exceptions.ReservationException;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 /***
  * A reservation (or booking?) represents a car in a category being used (not available for new rentals) by a customer during a certain period in a given location.
@@ -26,15 +23,17 @@ import javax.persistence.*;
  */
 
 @Entity
-public class Reservation implements com.reservation.domain.model.shared.Entity, Comparable<Reservation> {
+public class Reservation implements com.reservation.domain.model.shared.Entity {
 
 	private static final long serialVersionUID = -4965748075816786448L;
 
 	@EmbeddedId
 	private ReservationNumber reservationNumber;
-	@ManyToOne(cascade = CascadeType.ALL)
+	@NotNull
+	@ManyToOne(cascade = CascadeType.ALL, optional = false)
 	private Customer customer;
-	@ManyToOne
+	@NotNull
+	@ManyToOne(optional = false)
 	private Category category;
 
 	@ElementCollection(targetClass = ExtraProduct.class)
@@ -42,26 +41,37 @@ public class Reservation implements com.reservation.domain.model.shared.Entity, 
 			name = "RESERVATION_EXTRAPRODUCT",
 			joinColumns = @JoinColumn(name = "reservation_id")
 	)
-	@Column(name = "extra_product")
+	@Column(name = "extra_product", nullable = false)
 	@Enumerated(value = EnumType.STRING)
 	private Set<ExtraProduct> extras = new HashSet<>();
 
+	@NotNull
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private InsuranceType insurance = InsuranceType.STANDARD_INSURANCE;
-	@ManyToOne(cascade = CascadeType.ALL)
+	@NotNull
+	@ManyToOne(cascade = CascadeType.ALL, optional = false)
 	private City pickupLocation;
-	@ManyToOne(cascade = CascadeType.ALL)
+	@NotNull
+	@ManyToOne(cascade = CascadeType.ALL, optional = false)
 	private City dropOffLocation;
 
+	@NotNull
+	@Column(nullable = false)
 	private LocalDateTime pickupDateTime;
+	@NotNull
+	@Column(nullable = false)
 	private LocalDateTime dropOffDateTime;
 
+	@NotNull
+	@Column(nullable = false)
 	private final LocalDateTime createdAt = LocalDateTime.now();
+
 	private LocalDateTime confirmedAt;
 	private OrderId order;
 	
 	// TODO: Reservation date/time + expired convenience method?
-	
+	// TODO: Destructure category information (embed)
 	// TODO: Create Builder
 
 	protected Reservation() {
@@ -79,13 +89,13 @@ public class Reservation implements com.reservation.domain.model.shared.Entity, 
 		category.checkAvailable();
 
 		this.customer = customer;
-		this.category = category.getCategoryWithReservationInfo().getCategory();
+		this.category = category.getInformation();
 		this.pickupLocation = category.getPickupLocation();
 		this.pickupDateTime = category.getPickupDateTime();
 		this.dropOffLocation = category.getDropOffLocation();
 		this.dropOffDateTime = category.getDropOffDateTime();
 
-		this.reservationNumber = new ReservationNumber(UUID.randomUUID().toString());
+		this.reservationNumber = ReservationNumber.of(UUID.randomUUID().toString());
 	}
 	
 	public void addExtraProduct(ExtraProduct extra) {
@@ -97,6 +107,11 @@ public class Reservation implements com.reservation.domain.model.shared.Entity, 
 
 	public void clearExtras() {
 		this.extras.clear();
+	}
+
+	public void replaceExtraProductsWith(ExtraProduct[] extras) {
+		clearExtras();
+		Arrays.stream(extras).forEach(this::addExtraProduct);
 	}
 
 	public void removeExtraProduct(ExtraProduct extra) {
@@ -144,10 +159,6 @@ public class Reservation implements com.reservation.domain.model.shared.Entity, 
 			newOrder = onConfirmReservation.submit(this);
 		} catch (ReservationAlreadyConfirmedException e) {
 			newOrder = e.getOrderId();
-		}
-
-		if (this.insurance == InsuranceType.FULL_INSURANCE) {
-			throw new ReservationException(" ** Test exception **");
 		}
 
 		this.confirmedAt = LocalDateTime.now();
@@ -223,12 +234,5 @@ public class Reservation implements com.reservation.domain.model.shared.Entity, 
 	public String toString() {
 		return this.reservationNumber.toString();
 	}
-	
-	@Override
-	// TODO: Finish implementation
-	public int compareTo(Reservation another) {
-		return this.pickupDateTime.compareTo(another.pickupDateTime);
-	}
-
 	
 }

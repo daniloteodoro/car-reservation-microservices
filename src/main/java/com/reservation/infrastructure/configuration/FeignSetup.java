@@ -28,17 +28,12 @@ public class FeignSetup implements ErrorDecoder {
         } catch (IOException ignored) { // NOPMD
         }
         if (response.status() >= 400 && response.status() <= 499) {
-            return new FeignClientException(response.status(), message, bodyContent);
+            return new FeignClientException(response.status(), String.format("%s: %s", message, bodyContent), bodyContent);
         } else if (response.status() >= 500 && response.status() <= 599) {
-            return new FeignServerException(response.status(), message, bodyContent);
+            return new FeignServerException(response.status(), String.format("%s: %s", message, bodyContent), bodyContent);
         }
 
         return defaultErrorDecoder.decode(methodKey, response);
     }
-
-//    @Bean
-//    public FeignSetup getCustomErrorDecoder() {
-//        return new FeignSetup();
-//    }
 
 }

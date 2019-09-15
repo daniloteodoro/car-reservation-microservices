@@ -7,6 +7,7 @@ import com.reservation.domain.model.reservation.exceptions.ReservationAlreadyCon
 import com.reservation.domain.service.CarAuthService;
 import com.reservation.domain.service.OrderService;
 import com.reservation.domain.service.ReservationService;
+import com.reservation.domain.service.dto.CarReservationDto;
 import com.reservation.infrastructure.configuration.exceptions.FeignClientException;
 import com.reservation.util.JsonUtils;
 import feign.FeignException;
@@ -31,7 +32,7 @@ public class ReservationServiceRest implements ReservationService {
     }
 
     @Override
-    public ConfirmableReservation confirmReservation() {
+    public ConfirmableReservation confirm() {
         return reservation -> {
             String authorization = "";
             try {
@@ -46,8 +47,7 @@ public class ReservationServiceRest implements ReservationService {
             }
 
             try {
-                String orderId = carRentalOrderService.submit(authorization, new OrderService.OrderDetailsDto(reservation.getReservationNumber()));
-                return OrderId.of(orderId);
+                return carRentalOrderService.submit(authorization, CarReservationDto.basedOn(reservation));
             } catch (FeignClientException serviceError) {
                 if (serviceError.status() == HttpStatus.CONFLICT.value()) {
                     logger.warn(String.format("Reservation '%s' has already been confirmed to order '%s': %s", reservation.getReservationNumber(), serviceError.getResponseContent(), serviceError.getMessage()));

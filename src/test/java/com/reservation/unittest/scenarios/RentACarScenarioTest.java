@@ -3,15 +3,12 @@ package com.reservation.unittest.scenarios;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import com.reservation.domain.model.reservation.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.reservation.domain.model.car.CarRepository;
 import com.reservation.domain.model.car.CategoryRepository;
 import com.reservation.domain.model.reservation.exceptions.ReservationException;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 /***
@@ -24,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 @RunWith(MockitoJUnitRunner.class)
 public class RentACarScenarioTest {
 	
-	@Mock
-	private CarRepository carRepository;
+//	@Mock
+//	private CarRepository carRepository;
 	
 	@Mock
 	private CategoryRepository categoryRepository;

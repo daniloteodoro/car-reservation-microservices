@@ -13,12 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ModelServiceJpa implements ModelService {
+public class ModelServiceImpl implements ModelService {
 
     private final CategoryRepository categoryRepository;
     private final ModelRepository modelRepository;
 
-    public ModelServiceJpa(CategoryRepository categoryRepository, ModelRepository modelRepository) {
+    public ModelServiceImpl(CategoryRepository categoryRepository, ModelRepository modelRepository) {
         this.categoryRepository = categoryRepository;
         this.modelRepository = modelRepository;
     }
@@ -32,7 +32,7 @@ public class ModelServiceJpa implements ModelService {
 
         for (CategoryAvailability current : availableCategories) {
             if (current.isAvailable()) {
-                modelRepository.findFirstModelByCategory(current.getCategoryWithReservationInfo().getCategory())
+                modelRepository.findFirstModelByCategory(current.getInformation())
                         .ifPresent(availableModels::add);
             }
         }

@@ -39,7 +39,7 @@ public class Customer implements com.reservation.domain.model.shared.Entity {
 
 	@NotNull
 	@ManyToOne(cascade = CascadeType.ALL)
-	private City city = City.EMPTY;
+	private City city = City.UNKNOWN;
 
 	public static final Customer ANONYMOUS = buildAnonymousCustomer();
 
@@ -124,7 +124,7 @@ public class Customer implements com.reservation.domain.model.shared.Entity {
 		private String email;
 		private String phoneNumber;
 		private String address;
-		private City city = City.EMPTY;
+		private City city = City.UNKNOWN;
 
 		public Builder() {
 			super();

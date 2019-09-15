@@ -6,7 +6,7 @@ import com.reservation.domain.model.reservation.Country;
 public class CityDto {
 	
 	private String name = "";
-	private Country country = Country.NL;
+	private Country country = Country.UNKNOWN;
 	
 	public CityDto() {
 		super();
@@ -43,6 +43,6 @@ public class CityDto {
 
 	@Override
 	public String toString() {
-		return String.format("%s - %s", name, country);
+		return String.format("%s-%s", name, country);
 	}
 }

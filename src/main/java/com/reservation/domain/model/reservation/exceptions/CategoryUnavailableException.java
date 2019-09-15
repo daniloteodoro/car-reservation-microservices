@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 public class CategoryUnavailableException extends ReservationException {
 
-	private static final long serialVersionUID = -5653412110270129543L;
 
+	private static final long serialVersionUID = -7924452240071312592L;
 
 	public CategoryUnavailableException() {
 		super();

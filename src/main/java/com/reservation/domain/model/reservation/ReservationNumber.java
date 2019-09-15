@@ -16,7 +16,7 @@ public class ReservationNumber implements ValueObject {
 	private final String value;
 	
 	
-	public ReservationNumber(final String data) {
+	private ReservationNumber(final String data) {
 		super();
 		this.value = StringUtils.requireNonEmpty(data, "Reservation Number must not be null");
 	}

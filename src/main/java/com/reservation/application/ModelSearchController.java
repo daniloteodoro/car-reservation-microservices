@@ -29,14 +29,15 @@ public class ModelSearchController {
 	}
 	
 	/**
-	 * Handles calls using the following format: http://localhost:8081/search/from/(origin_city)/(start_datetime)/to/(destiny_city)/(end_datetime) <br>
+	 * Return a list of models (a category, ultimately) available for rent given the parameters.
+	 * This method handles calls using the following format: http://localhost:8081/search/from/(origin_city)/(start_datetime)/to/(destiny_city)/(end_datetime) <br>
 	 *   For example: http://localhost:8081/search/from/rotterdam-nl/2018-07-16 08:00/to/rotterdam-nl/2018-07-20 16:00
 	 * @param origin Represents a city name followed by its 2-digit country code
-	 * @param start Represents the search's start date
+	 * @param start Represents the search's start date and time: yyyy-MM-dd HH:mm
 	 * @param destiny Represents a city name followed by its 2-digit country code
-	 * @param finish Represents the search's end date
+	 * @param finish Represents the search's end date and time: yyyy-MM-dd HH:mm
 	 * @return A list of available categories represented by a model inside this category
-	 * @throws InvalidCityException In case the API could not find the city
+	 * @throws CityNotFoundException In case the API could not find the city
 	 */
 	@ApiOperation("Returns available categories, represented by one of their car models, based on city and date/time requirements")
 	@GetMapping("/models/from/{from}/{start}/to/{to}/{finish}")
@@ -44,20 +45,20 @@ public class ModelSearchController {
 			@PathVariable("from") String origin, 
 			@PathVariable("start") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime start, 
 			@PathVariable("to") String destiny, 
-			@PathVariable("finish") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime finish) throws InvalidCityException {
-		
-		City pickupLocation = cityRepository.findByNameAndCountryCode(origin)
-				.orElseThrow(() -> new InvalidCityException(String.format("Origin city %s not found", origin)));
-		City dropOffLocation = cityRepository.findByNameAndCountryCode(destiny)
-				.orElseThrow(() -> new InvalidCityException(String.format("Destiny city %s not found", destiny)));
+			@PathVariable("finish") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime finish) throws CityNotFoundException {
 
-		// TODO: Add timezone based on pick-up / drop-off location.
-		// TODO: Validate start and end dates
+		if (start.isAfter(finish))
+			throw new RuntimeException("Start date should be earlier than the end date");
+
+		City pickupLocation = cityRepository.findByNameAndCountryCode(origin)
+				.orElseThrow(() -> new CityNotFoundException(String.format("Origin city %s not found", origin)));
+		City dropOffLocation = cityRepository.findByNameAndCountryCode(destiny)
+				.orElseThrow(() -> new CityNotFoundException(String.format("Destiny city %s not found", destiny)));
 
 		List<ModelDto> modelsFromAvailableCategories =
                 modelService.availableOn(pickupLocation, start, dropOffLocation, finish)
 						.stream()
-						.map( model -> ModelDto.basedOn(model) )
+						.map(ModelDto::basedOn)
 						.collect(Collectors.toList());
 
 		return modelsFromAvailableCategories;
