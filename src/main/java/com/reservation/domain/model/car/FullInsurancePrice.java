@@ -3,15 +3,22 @@ package com.reservation.domain.model.car;
 import com.reservation.domain.model.car.exceptions.InvalidPriceException;
 import com.reservation.domain.model.shared.ValueObject;
 
-public class Price implements ValueObject {
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import java.util.Objects;
 
-	private static final long serialVersionUID = -6436912571212731200L;
-	public static final Price ZERO = new Price();
+@Embeddable
+public class FullInsurancePrice implements ValueObject {
 
+	private static final long serialVersionUID = 3264452369247187812L;
+
+	public static final FullInsurancePrice ZERO = new FullInsurancePrice();
+
+	@Column(name="full_insurance_price", nullable=false)
 	private final Double value;
-	
-	
-	public Price(final Double price) {
+
+
+	public FullInsurancePrice(final Double price) {
 		super();
 		if (price == null) {
 			throw new InvalidPriceException("Price must not be null.");
@@ -21,35 +28,39 @@ public class Price implements ValueObject {
 		}
 		this.value = price;
 	}
-	
+
 	// Simple constructor for ORM and serializers
-	protected Price() {
+	protected FullInsurancePrice() {
 		super();
 		this.value = 0.0;
 	}
-	
+
 	public Double getValue() { return this.value; }
-	
+
 	public Double forPeriod(long totalDays) {
 		return getValue() * totalDays;
 	}
-	
+
+	public Price toPrice() {
+		return new Price(getValue());
+	}
+
 	@Override
 	public String toString() {
 		return value.toString();
 	}
-	
+
 	@Override
 	public int hashCode() {
-		return value.hashCode();
+		return Objects.hash(value);
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		Price price = (Price) o;
-		return value.equals(price.value);
+		FullInsurancePrice that = (FullInsurancePrice) o;
+		return value.equals(that.value);
 	}
 
 }

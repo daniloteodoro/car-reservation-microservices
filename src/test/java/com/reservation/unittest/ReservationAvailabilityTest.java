@@ -2,17 +2,6 @@ package com.reservation.unittest;
 
 import static org.mockito.Mockito.mock;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import com.reservation.domain.model.car.Category;
-import com.reservation.domain.model.customer.Customer;
-import com.reservation.domain.model.reservation.City;
-import com.reservation.domain.model.reservation.Reservation;
-
 public class ReservationAvailabilityTest {
 	
 	

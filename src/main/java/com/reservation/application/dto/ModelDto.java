@@ -17,7 +17,7 @@ public class ModelDto {
 	}
 	
 	public static ModelDto basedOn(Model model) {
-		return new ModelDto(model.getBrand().getDescription(), model.getDescription(), CategoryDto.basedOn(model.getCategory()));
+		return new ModelDto(model.getBrand().getDescription(), model.getDescription(), CategoryDto.basedOn(model.getCategoryPricing()));
 	}
 	
 	public String getBrand() {

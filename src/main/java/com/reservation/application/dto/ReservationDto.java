@@ -43,10 +43,10 @@ public class ReservationDto {
 		CityDto pickupLocation = CityDto.basedOn(reservation.getPickupLocation());
 		CityDto dropoffLocation = CityDto.basedOn(reservation.getDropOffLocation());
 		
-		reservation.getExtras().forEachRemaining((item) -> extras.add(item));
+		reservation.getExtras().forEachRemaining(extras::add);
 		
-		return new ReservationDto(reservation.getReservationNumber(), CategoryDto.basedOn(reservation.getCategory()), CustomerDto.basedOn(reservation.getCustomer()), 
-								  extras, reservation.getInsurance(), pickupLocation, reservation.getPickupDateTime(), dropoffLocation, reservation.getDropOffDateTime(),
+		return new ReservationDto(reservation.getReservationNumber(), CategoryDto.basedOn(reservation), CustomerDto.basedOn(reservation.getCustomer()),
+								  extras, reservation.getInsuranceType(), pickupLocation, reservation.getPickupDateTime(), dropoffLocation, reservation.getDropOffDateTime(),
 								  reservation.calculateTotal());
 	}
 	

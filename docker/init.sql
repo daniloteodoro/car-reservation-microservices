@@ -2,7 +2,7 @@ delete from Reservation;
 delete from Customer;
 delete from Car;
 delete from Model;
-delete from Category;
+delete from category_pricing;
 delete from City;
 
 -- Sample cities
@@ -20,11 +20,11 @@ values (3, 'NL', 'Amsterdam');
 
 
 -- Sample categories
-insert into Category (CATEGORY_TYPE, PRICE, STANDARD_INSURANCE, FULL_INSURANCE)
-values ('COMPACT', 35.0, 0, 12.0);
+insert into category_pricing (CATEGORY_TYPE, PRICE_PER_DAY, STANDARD_INSURANCE, FULL_INSURANCE)
+values ('COMPACT', 35.0, 5, 12.0);
 
-insert into Category (CATEGORY_TYPE, PRICE, STANDARD_INSURANCE, FULL_INSURANCE)
-values ('MEDIUMSIZED', 40.0, 0, 18.0);
+insert into category_pricing (CATEGORY_TYPE, PRICE_PER_DAY, STANDARD_INSURANCE, FULL_INSURANCE)
+values ('MEDIUMSIZED', 40.0, 7, 18.0);
 
 
 -- Sample models
@@ -59,8 +59,8 @@ values ('DE-8271', 102);
 insert into Customer (id, fullName, email, phoneNumber, address, city_id)
 values (-1, 'Unknown', '(N/A)', '(N/A)', '(N/A)', -1);
 
-insert into Customer (id, fullName, email, phoneNumber, address, city_id)
-values (500, '(Car Rental)', 'adm@carrental.com', '12-2345-82828', 'Street X, 888', 1);
+--insert into Customer (id, fullName, email, phoneNumber, address, city_id)
+--values (500, '(Car Rental)', 'adm@carrental.com', '12-2345-82828', 'Street X, 888', 1);
 
 
 -- Sample Reservations

@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface ModelService {
 
-    List<Model> availableOn(City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime);
+    List<Model> modelsAvailableOn(City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime);
 
 }

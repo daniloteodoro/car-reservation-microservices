@@ -1,13 +1,7 @@
 package com.reservation.domain.model.reservation;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-
-import com.reservation.domain.model.car.Category;
-import com.reservation.domain.model.car.CategoryAvailability;
-import com.reservation.domain.model.car.ExtraProduct;
-import com.reservation.domain.model.car.InsuranceType;
+import com.reservation.domain.model.car.*;
+import com.reservation.domain.model.car.exceptions.CarRentalRuntimeException;
 import com.reservation.domain.model.customer.Customer;
 import com.reservation.domain.model.reservation.exceptions.CategoryUnavailableException;
 import com.reservation.domain.model.reservation.exceptions.ReservationAlreadyConfirmedException;
@@ -15,6 +9,9 @@ import com.reservation.domain.model.reservation.exceptions.ReservationException;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 /***
  * A reservation (or booking?) represents a car in a category being used (not available for new rentals) by a customer during a certain period in a given location.
@@ -28,18 +25,21 @@ public class Reservation implements com.reservation.domain.model.shared.Entity {
 	private static final long serialVersionUID = -4965748075816786448L;
 
 	@EmbeddedId
-	private ReservationNumber reservationNumber;
+	private final ReservationNumber reservationNumber;
+
+	@NotNull
+	@Enumerated(value = EnumType.STRING)
+	@Column(name = "category_type", nullable = false)
+	private final CategoryType type;
+
 	@NotNull
 	@ManyToOne(cascade = CascadeType.ALL, optional = false)
 	private Customer customer;
-	@NotNull
-	@ManyToOne(optional = false)
-	private Category category;
 
 	@ElementCollection(targetClass = ExtraProduct.class)
 	@CollectionTable(
-			name = "RESERVATION_EXTRAPRODUCT",
-			joinColumns = @JoinColumn(name = "reservation_id")
+			name = "reservation_extraproduct",
+			joinColumns = @JoinColumn(name = "reservation_number")
 	)
 	@Column(name = "extra_product", nullable = false)
 	@Enumerated(value = EnumType.STRING)
@@ -48,56 +48,83 @@ public class Reservation implements com.reservation.domain.model.shared.Entity {
 	@NotNull
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
-	private InsuranceType insurance = InsuranceType.STANDARD_INSURANCE;
+	private InsuranceType insuranceType = InsuranceType.STANDARD_INSURANCE;
+
 	@NotNull
 	@ManyToOne(cascade = CascadeType.ALL, optional = false)
-	private City pickupLocation;
+	private final City pickupLocation;
+
 	@NotNull
 	@ManyToOne(cascade = CascadeType.ALL, optional = false)
-	private City dropOffLocation;
+	private final City dropOffLocation;
 
 	@NotNull
 	@Column(nullable = false)
-	private LocalDateTime pickupDateTime;
+	private final LocalDateTime pickupDateTime;
+
 	@NotNull
 	@Column(nullable = false)
-	private LocalDateTime dropOffDateTime;
+	private final LocalDateTime dropOffDateTime;
 
 	@NotNull
 	@Column(nullable = false)
 	private final LocalDateTime createdAt = LocalDateTime.now();
 
+	@NotNull
+	@Embedded
+	@AttributeOverride(name="value", column=@Column(name="price_per_day", nullable = false))
+	private final CarPrice pricePerDay;
+
+	@NotNull
+	@Embedded
+	private StandardInsurancePrice standardInsurancePrice;
+
+	@NotNull
+	@Embedded
+	private FullInsurancePrice fullInsurancePrice;
+
 	private LocalDateTime confirmedAt;
 	private OrderId order;
-	
+
 	// TODO: Reservation date/time + expired convenience method?
-	// TODO: Destructure category information (embed)
 	// TODO: Create Builder
 
 	protected Reservation() {
 		super();
 		// used only by ORMs and serializers
+		this.type = CategoryType.VAN;
+		this.pricePerDay = new CarPrice(1_000_000.00);
+		this.standardInsurancePrice = StandardInsurancePrice.ZERO;
+		this.fullInsurancePrice = FullInsurancePrice.ZERO;
+		this.reservationNumber = ReservationNumber.of("NULL");
+		this.pickupLocation = City.UNKNOWN;
+		this.pickupDateTime = LocalDateTime.MIN;
+		this.dropOffLocation = City.UNKNOWN;
+		this.dropOffDateTime = LocalDateTime.MIN;
 	}
 
 	// Cars available in a certain category, for a given location and period =>
-	public Reservation(Customer customer, CategoryAvailability category) throws CategoryUnavailableException {
+	public Reservation(Customer customer, Category category) throws CategoryUnavailableException {
 		super();
-		
+
 		Objects.requireNonNull(customer, "Invalid customer");
 		Objects.requireNonNull(category, "Invalid category");
 
 		category.checkAvailable();
 
 		this.customer = customer;
-		this.category = category.getInformation();
+		this.type = category.getType();
 		this.pickupLocation = category.getPickupLocation();
 		this.pickupDateTime = category.getPickupDateTime();
 		this.dropOffLocation = category.getDropOffLocation();
 		this.dropOffDateTime = category.getDropOffDateTime();
+		this.pricePerDay = category.getPricingInformation().getPricePerDay();
+		this.standardInsurancePrice = category.getPricingInformation().getStandardInsurance();
+		this.fullInsurancePrice = category.getPricingInformation().getFullInsurance();
 
 		this.reservationNumber = ReservationNumber.of(UUID.randomUUID().toString());
 	}
-	
+
 	public void addExtraProduct(ExtraProduct extra) {
 		Objects.requireNonNull(extra, "Extra product must not be null");
 		if (!extras.contains(extra)) {
@@ -118,11 +145,17 @@ public class Reservation implements com.reservation.domain.model.shared.Entity {
 		Objects.requireNonNull(extra, "Extra product must not be null");
 		this.extras.remove(extra);
 	}
-	
+
+	// TODO: Change to Price VO
 	public Double getTotalForInsurance() {
-		return this.category.getInsurancePriceFor(insurance).forPeriod(getAmountOfDays());
+		switch (insuranceType) {
+			case FULL_INSURANCE: return getFullInsurancePrice().forPeriod(getAmountOfDays());
+			case STANDARD_INSURANCE: return getStandardInsurancePrice().forPeriod(getAmountOfDays());
+			default:
+				throw new CarRentalRuntimeException(String.format("Unknown insurance type: %s", insuranceType));
+		}
 	}
-	
+
 	public Double getTotalForExtras() {
 		double extrasVal = 0.0;
 		for (ExtraProduct extra: extras) {
@@ -130,25 +163,27 @@ public class Reservation implements com.reservation.domain.model.shared.Entity {
 		}
 		return extrasVal;
 	}
-	
+
 	public Double calculateTotal() {
 		Double price = getTotalPriceForCategory();
 		Double insurance = getTotalForInsurance();
 		Double extras = getTotalForExtras();
-		
+
 		return price + insurance + extras;
 	}
-	
+
 	private Double getTotalPriceForCategory() {
-		return category.getPricePerDay().forPeriod(getAmountOfDays());
+		return getPricePerDay().forPeriod(getAmountOfDays());
 	}
-	
+
 	public Long getAmountOfDays() {
 		Long rentalDays = ChronoUnit.DAYS.between(pickupDateTime.toLocalDate(), dropOffDateTime.toLocalDate());
 		return rentalDays;
 	}
-	
+
 	public OrderId confirm(ConfirmableReservation onConfirmReservation) throws ReservationException {
+		if (getPickupLocation().isUnknown() || getDropOffLocation().isUnknown())
+			throw new ReservationException("Pick-up location or drop-off locations is unknown");
 		if (getCustomer().isAnonymous())
 			throw new ReservationException("No customer associated to this reservation");
 		if (isConfirmed())
@@ -172,43 +207,25 @@ public class Reservation implements com.reservation.domain.model.shared.Entity {
 	}
 
 	// Simple getters and setters
-	public ReservationNumber getReservationNumber() {
-		return reservationNumber;
-	}
+	public ReservationNumber getReservationNumber() { return reservationNumber; }
 	public LocalDateTime getCreatedAt() { return createdAt;	}
 	public LocalDateTime getConfirmedAt() { return confirmedAt; }
 	public OrderId getOrder() { return order; }
-	public Category getCategory() {
-		return category;
-	}
-	public Customer getCustomer() {
-		return customer;
-	}
-	public Iterator<ExtraProduct> getExtras() {
-		return extras.iterator();
-	}
-	public City getPickupLocation() {
-		return pickupLocation;
-	}
-	public LocalDateTime getPickupDateTime() {
-		return pickupDateTime;
-	}
-	public City getDropOffLocation() {
-		return dropOffLocation;
-	}
-	public LocalDateTime getDropOffDateTime() {
-		return dropOffDateTime;
-	}
-	public InsuranceType getInsurance() {
-		return insurance;
-	}
-
-	public void setInsurance(InsuranceType insurance) {
-		this.insurance = insurance;
-	}
+	public Customer getCustomer() { return customer; }
+	public Iterator<ExtraProduct> getExtras() { return extras.iterator(); }
+	public City getPickupLocation() { return pickupLocation; }
+	public LocalDateTime getPickupDateTime() { return pickupDateTime; }
+	public City getDropOffLocation() { return dropOffLocation; }
+	public LocalDateTime getDropOffDateTime() { return dropOffDateTime; }
+	public InsuranceType getInsuranceType() { return insuranceType;	}
+	public CategoryType getType() { return type; }
+	public CarPrice getPricePerDay() { return pricePerDay; }
+	public StandardInsurancePrice getStandardInsurancePrice() { return standardInsurancePrice;	}
+	public FullInsurancePrice getFullInsurancePrice() { return fullInsurancePrice; }
+	public void setInsuranceType(InsuranceType insuranceType) { this.insuranceType = insuranceType;	}
 	public void setCustomer(Customer customer) throws ReservationException {
 		if (customer == null)
-			throw new ReservationException("Cannot set a null or invalid customer to reservation");
+			throw new RuntimeException("Cannot set a null or invalid customer to reservation");
 		this.customer = customer;
 	}
 
@@ -216,23 +233,18 @@ public class Reservation implements com.reservation.domain.model.shared.Entity {
 	public int hashCode() {
 		return reservationNumber.hashCode();
 	}
-	
+
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		
-		Reservation other = (Reservation) obj;
-		return this.reservationNumber.equals(other.reservationNumber);
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Reservation that = (Reservation) o;
+		return reservationNumber.equals(that.reservationNumber);
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.reservationNumber.toString();
 	}
-	
+
 }

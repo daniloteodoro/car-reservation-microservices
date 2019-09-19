@@ -8,33 +8,33 @@ public class CategoryWithReservationInfo {
 
     public static final String CATEGORY_AVAILABILITY_MAPPING = "CategoryAvailabilityMapping";
     public static final String GET_AVAILABLE_CATEGORY_BASED_ON_RESERVATION =
-            "select c.category_type, c.full_insurance, c.price, c.standard_insurance, coalesce(available.total, 0) as total, coalesce(reservations.amount, 0) as total_reserved \n" +
-            "  from category c \n" +
+            "select c.category_type, c.full_insurance, c.price_per_day, c.standard_insurance, coalesce(available.total, 0) as total, coalesce(reservations.amount, 0) as total_reserved \n" +
+            "  from category_pricing c \n" +
             "  left join (select m.category_id, count(*) as total \n" +
             "               from car c \n" +
             "               inner join model m on m.id = c.model_id \n" +
             "               group by m.category_id) available on available.category_id = c.category_type \n" +
-            "  left join (select r.category_category_type, count(*) as amount \n" +
+            "  left join (select r.category_type, count(*) as amount \n" +
             "               from reservation r \n" +
             "              where ((:START_DATE between r.pickupdatetime and r.dropoffdatetime) or \n" +
             "                     (:END_DATE between r.pickupdatetime and r.dropoffdatetime) or \n" +
             "                     (:START_DATE <= r.pickupdatetime and :END_DATE >= r.dropoffdatetime)) \n" +
-            "              group by r.category_category_type) reservations on reservations.category_category_type = c.category_type \n"+
+            "              group by r.category_type) reservations on reservations.category_type = c.category_type \n"+
             " order by c.category_type ";
 
-    private final Category category;
+    private final CategoryPricing categoryPricing;
     private final Integer total;
     private final Integer totalReserved;
 
 
     public CategoryWithReservationInfo(String type, Double pricePerDay, Double standardInsurance, Double fullInsurance, Integer total, Integer totalReserved) {
-        this.category = new Category(CategoryType.valueOf(type), new CarPrice(pricePerDay), new Price(standardInsurance), new Price(fullInsurance));
+        this.categoryPricing = new CategoryPricing(CategoryType.valueOf(type), new CarPrice(pricePerDay), new StandardInsurancePrice(standardInsurance), new FullInsurancePrice(fullInsurance));
         this.total = total;
         this.totalReserved = totalReserved;
     }
 
-    public Category getCategory() {
-        return category;
+    public CategoryPricing getCategoryPricing() {
+        return categoryPricing;
     }
     public Integer getTotal() {
         return total;

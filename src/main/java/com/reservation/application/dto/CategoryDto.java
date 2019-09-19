@@ -1,7 +1,8 @@
 package com.reservation.application.dto;
 
-import com.reservation.domain.model.car.Category;
+import com.reservation.domain.model.car.CategoryPricing;
 import com.reservation.domain.model.car.CategoryType;
+import com.reservation.domain.model.reservation.Reservation;
 
 public class CategoryDto {
 	
@@ -17,9 +18,13 @@ public class CategoryDto {
 		this.standardInsurance = standardInsurance;
 		this.fullInsurance = fullInsurance;
 	}
-	
-	public static CategoryDto basedOn(Category category) {
-		return new CategoryDto(category.getType(), category.getPricePerDay().getValue(), category.getStandardInsurance().getValue(), category.getFullInsurance().getValue());
+
+	public static CategoryDto basedOn(Reservation reservation) {
+		return new CategoryDto(reservation.getType(), reservation.getPricePerDay().getValue(), reservation.getStandardInsurancePrice().getValue(), reservation.getFullInsurancePrice().getValue());
+	}
+
+	public static CategoryDto basedOn(CategoryPricing categoryPricing) {
+		return new CategoryDto(categoryPricing.getType(), categoryPricing.getPricePerDay().getValue(), categoryPricing.getStandardInsurance().getValue(), categoryPricing.getFullInsurance().getValue());
 	}
 
 	public CategoryType getType() {

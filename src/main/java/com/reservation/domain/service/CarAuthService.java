@@ -18,13 +18,8 @@ public interface CarAuthService {
 			this.password = password;
 		}
 
-		public String getUsername() {
-			return username;
-		}
-
-		public String getPassword() {
-			return password;
-		}
+		public String getUsername() { return username; }
+		public String getPassword() { return password; }
 
 		@Override
 		public String toString() {

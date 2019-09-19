@@ -7,8 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class CarUnavailableException extends ReservationException {
 
 	private static final long serialVersionUID = -6614127744974131275L;
-	
-	
+
 	public CarUnavailableException() {
 		super();
 	}

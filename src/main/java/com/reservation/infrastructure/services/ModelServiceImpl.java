@@ -1,6 +1,6 @@
 package com.reservation.infrastructure.services;
 
-import com.reservation.domain.model.car.CategoryAvailability;
+import com.reservation.domain.model.car.Category;
 import com.reservation.domain.model.car.CategoryRepository;
 import com.reservation.domain.model.car.Model;
 import com.reservation.domain.model.car.ModelRepository;
@@ -24,15 +24,17 @@ public class ModelServiceImpl implements ModelService {
     }
 
     @Override
-    public List<Model> availableOn(City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime) {
+    public List<Model> modelsAvailableOn(City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime) {
         List<Model> availableModels = new ArrayList<>();
 
-        List<CategoryAvailability> availableCategories =
+        List<Category> availableCategories =
                 categoryRepository.getCategoryAvailabilities(pickupLocation, pickupDateTime, dropOffLocation, dropOffDateTime);
 
-        for (CategoryAvailability current : availableCategories) {
+        for (Category current : availableCategories) {
             if (current.isAvailable()) {
-                modelRepository.findFirstModelByCategory(current.getInformation())
+                modelRepository.findModelsByCategoryType(current.getType())
+                        .stream()
+                        .findFirst()
                         .ifPresent(availableModels::add);
             }
         }

@@ -1,119 +1,106 @@
 package com.reservation.domain.model.car;
 
-import com.reservation.domain.model.car.exceptions.CarRentalRuntimeException;
+import com.reservation.domain.model.customer.Customer;
+import com.reservation.domain.model.reservation.City;
+import com.reservation.domain.model.reservation.Reservation;
+import com.reservation.domain.model.reservation.exceptions.CategoryUnavailableException;
+import com.reservation.domain.model.shared.ValueObject;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
-@Entity
-@NamedQueries({
-		@NamedQuery(name=Category.GET_ALL_CATEGORIES, query="select c from Category c order by c.type"),
-		@NamedQuery(name=Category.GET_CATEGORY_BY_TYPE, query="select c from Category c where c.type = :TYPE"),
-})
-@SqlResultSetMapping(
-		name = CategoryWithReservationInfo.CATEGORY_AVAILABILITY_MAPPING,
-		classes = {
-				@ConstructorResult(
-						targetClass = CategoryWithReservationInfo.class,
-						columns = {
-								@ColumnResult(name = "category_type", type = String.class),
-								@ColumnResult(name = "price", type = Double.class),
-								@ColumnResult(name = "standard_insurance", type = Double.class),
-								@ColumnResult(name = "full_insurance", type = Double.class),
-								@ColumnResult(name = "total", type = Integer.class),
-								@ColumnResult(name = "total_reserved", type = Integer.class)
-						}
-				)
-		})
-/**
- * Represents a category of models that a customer can rent, e.g. Compact (Fiesta, Corsa, Clio, etc)
- * The category itself could have been modelled as a Value Object, but there are also associated information that could
- * change, such as Prices.
+/***
+ * Represents a car category, like "Compact" or "MediumSized", for a given location and period, and can answer whether it's available to be reserved or not.
+ * A car category can contain many car models, and every car model can contain many cars. When a customer books a car they see the picture of a specific car, but
+ * they are actually booking this car's category. In this case, if you search for cars in Vancouver in August/2019, you might see 3 cars, say Ford Fiesta, VW Golf, and Audi A4.
+ * When you select "Ford Fiesta", you are in reality booking the "Compact" category, which means the rental store can give you a similar car like Renault Clio instead.
+ *
+ * The availability is defined based on total cars reserved VS. total cars available, for this category, in this period (cars are available to all locations).
+ *
+ * Pricing is also tied to the category: Price per day, Standard insurance price and Full insurance price. This information can be edited and reflect this change on all associated items,
+ * and therefore is an entity used by this value object.
  */
-public class Category implements com.reservation.domain.model.shared.Entity {
+public class Category implements ValueObject {
 
-	private static final long serialVersionUID = -3207483314736276184L;
+    private static final long serialVersionUID = 7121312138776084091L;
 
-	public static final String GET_ALL_CATEGORIES = "getAllCategories";
-	public static final String GET_CATEGORY_BY_TYPE = "getCategoryByType";
+    private final CategoryType type;
+    private final CategoryPricing pricingInformation;
+    private final City pickupLocation;
+    private final City dropOffLocation;
+    private final LocalDateTime pickupDateTime;
+    private final LocalDateTime dropOffDateTime;
+    private final Integer total;
+    private final Integer totalReserved;
 
-	@Id
-	@Enumerated(EnumType.STRING)
-	@Column(name="CATEGORY_TYPE", nullable = false)
-	private final CategoryType type;
+    public Category(final CategoryType type, final CategoryPricing pricingInformation, final City pickupLocation, final City dropOffLocation, final LocalDateTime pickupDateTime, final LocalDateTime dropOffDateTime, Integer total, Integer totalReserved) {
+        super();
+        Objects.requireNonNull(type, "Invalid category type");
+        Objects.requireNonNull(pricingInformation, "Invalid category pricing information");
+        Objects.requireNonNull(pickupLocation, "Invalid pickup location");
+        Objects.requireNonNull(pickupDateTime, "Invalid pickup date/time");
+        Objects.requireNonNull(dropOffLocation, "Invalid drop-off location");
+        Objects.requireNonNull(dropOffDateTime, "Invalid drop-off date/time");
 
-	@NotNull
-	@Embedded
-	@AttributeOverride(name="value", column=@Column(name="PRICE", nullable = false))
-	private final CarPrice pricePerDay;
+        if (pickupDateTime.isAfter(dropOffDateTime)) {
+            throw new RuntimeException("Pick-up date/time should be earlier than the Drop-off date/time");
+        }
+        if (total < 0) {
+            throw new RuntimeException("Total quantity of cars in a category should be positive");
+        }
+        if (totalReserved < 0) {
+            throw new RuntimeException("Total quantity of reserved cars should be positive");
+        }
+        if (totalReserved > total) {
+            throw new RuntimeException("Total quantity of reserved cars cannot be greater than total quantity of cars");
+        }
 
-	@NotNull
-	@Embedded
-	@AttributeOverride(name="value", column=@Column(name="STANDARD_INSURANCE", nullable = false))
-	private final Price standardInsurance;
+        this.type = type;
+        this.pricingInformation = pricingInformation;
+        this.pickupLocation = pickupLocation;
+        this.dropOffLocation = dropOffLocation;
+        this.pickupDateTime = pickupDateTime;
+        this.dropOffDateTime = dropOffDateTime;
+        this.total = total;
+        this.totalReserved = totalReserved;
+    }
 
-	@NotNull
-	@Embedded
-	@AttributeOverride(name="value", column=@Column(name="FULL_INSURANCE", nullable = false))
-	private final Price fullInsurance;
+    public boolean isAvailable() {
+        return getTotalAvailable() > 0;
+    }
 
+    public void checkAvailable() throws CategoryUnavailableException {
+        if (!this.isAvailable())
+            throw new CategoryUnavailableException(String.format("Category '%s' is not available for reservation", pricingInformation.getType()));
+    }
 
-	public Category(final CategoryType type, final CarPrice pricePerDay, final Price standardInsurance, final Price fullInsurance) {
-		super();
-		this.type = Objects.requireNonNull(type, "Category type must not be null.");
-		this.pricePerDay = Objects.requireNonNull(pricePerDay, "Category's price per day must not be null.");
-		this.standardInsurance = Objects.requireNonNull(standardInsurance, "Category's standard insurance must not be null.");
-		this.fullInsurance = Objects.requireNonNull(fullInsurance, "Category's full insurance must not be null.");
-	}
-	
-	// Simple constructor for ORM and serializers
-	protected Category() {
-		super();
-		this.type = CategoryType.VAN;
-		this.pricePerDay = new CarPrice(1_000_000.00);
-		this.standardInsurance = Price.ZERO;
-		this.fullInsurance = Price.ZERO;
-	}
-	
-	public Price getInsurancePriceFor(InsuranceType insuranceType) {
-		if (insuranceType == null) {
-			throw new CarRentalRuntimeException("Insurance type must not be null");
-		}
-		switch (insuranceType) {
-		case FULL_INSURANCE: return getFullInsurance();
-		case STANDARD_INSURANCE: return getStandardInsurance();
-		default:
-			throw new CarRentalRuntimeException("Unknown insurance type: " + insuranceType.toString());
-		}
-	}
-	
-	public CategoryType getType() { return type; }
-	public CarPrice getPricePerDay() { return pricePerDay; }
-	public Price getStandardInsurance() { return standardInsurance; }
-	public Price getFullInsurance() { return fullInsurance;	}
+    private int getTotalAvailable() {
+        int available = getTotal() - getTotalReserved();
+        return Math.max(available, 0);
+    }
 
-	@Override
-	public String toString() {
-		return type.toString();
-	}
-	
-	@Override
-	public int hashCode() {
-		return type.hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		
-		Category other = (Category) obj;
-		return type.equals(other.type);
-	}
-	
+    public CategoryType getType() { return type; }
+    public CategoryPricing getPricingInformation() {
+        return pricingInformation;
+    }
+    public City getPickupLocation() {
+        return pickupLocation;
+    }
+    public City getDropOffLocation() {
+        // TODO: Return a copy of this VO.
+        return dropOffLocation;
+    }
+    public LocalDateTime getPickupDateTime() {
+        return pickupDateTime;
+    }
+    public LocalDateTime getDropOffDateTime() {
+        return dropOffDateTime;
+    }
+    public Integer getTotal() { return total; }
+    public Integer getTotalReserved() { return totalReserved; }
+
+    public Reservation reserveFor(Customer visitor) throws CategoryUnavailableException {
+        checkAvailable();
+        return new Reservation(visitor, this);
+    }
 }

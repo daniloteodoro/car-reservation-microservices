@@ -1,16 +1,22 @@
 package com.reservation.application;
 
 import com.reservation.application.dto.ModelDto;
-import com.reservation.domain.model.reservation.*;
-import com.reservation.domain.model.reservation.exceptions.*;
+import com.reservation.application.exceptions.SearchCarException;
+import com.reservation.domain.model.reservation.City;
+import com.reservation.domain.model.reservation.CityRepository;
+import com.reservation.domain.model.reservation.exceptions.CityNotFoundException;
+import com.reservation.domain.model.reservation.exceptions.ReservationException;
 import com.reservation.domain.service.ModelService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @CrossOrigin
@@ -45,23 +51,26 @@ public class ModelSearchController {
 			@PathVariable("from") String origin, 
 			@PathVariable("start") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime start, 
 			@PathVariable("to") String destiny, 
-			@PathVariable("finish") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime finish) throws CityNotFoundException {
+			@PathVariable("finish") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") LocalDateTime finish) throws CityNotFoundException, ReservationException {
 
 		if (start.isAfter(finish))
-			throw new RuntimeException("Start date should be earlier than the end date");
+			throw new ReservationException("Pick-up date/time should be earlier than the Drop-off date/time");
 
 		City pickupLocation = cityRepository.findByNameAndCountryCode(origin)
 				.orElseThrow(() -> new CityNotFoundException(String.format("Origin city %s not found", origin)));
 		City dropOffLocation = cityRepository.findByNameAndCountryCode(destiny)
 				.orElseThrow(() -> new CityNotFoundException(String.format("Destiny city %s not found", destiny)));
 
-		List<ModelDto> modelsFromAvailableCategories =
-                modelService.availableOn(pickupLocation, start, dropOffLocation, finish)
-						.stream()
-						.map(ModelDto::basedOn)
-						.collect(Collectors.toList());
+		try {
+			return modelService.modelsAvailableOn(pickupLocation, start, dropOffLocation, finish)
+					.stream()
+					.map(ModelDto::basedOn)
+					.collect(Collectors.toList());
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new SearchCarException("Failure searching models, please try again later.");
+		}
 
-		return modelsFromAvailableCategories;
 	}
 
 }

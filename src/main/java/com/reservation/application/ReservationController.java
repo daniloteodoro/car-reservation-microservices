@@ -4,9 +4,10 @@ import com.reservation.application.dto.CreateReservationDto;
 import com.reservation.application.dto.CustomerDto;
 import com.reservation.application.dto.ReservationDto;
 import com.reservation.domain.model.car.*;
-import com.reservation.domain.model.car.exceptions.*;
-import com.reservation.domain.model.customer.Customer;
-import com.reservation.domain.model.customer.CustomerRepository;
+import com.reservation.domain.model.car.exceptions.CarRentalException;
+import com.reservation.domain.model.car.exceptions.CategoryNotFoundException;
+import com.reservation.domain.model.car.exceptions.CategoryTypeNotFoundException;
+import com.reservation.domain.model.car.exceptions.CustomerNotFoundException;
 import com.reservation.domain.model.reservation.*;
 import com.reservation.domain.model.reservation.exceptions.*;
 import com.reservation.domain.service.ReservationService;
@@ -18,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -31,20 +31,16 @@ public class ReservationController {
 
 	private final ReservationRepository reservationRepository;
 	private final CityRepository cityRepository;
-	private final CategoryRepository categoryRepository;
-	private final CustomerRepository customerRepository;
 	private final ReservationService reservationService;
 
 	private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
 
 	@Autowired
-	public ReservationController(ReservationRepository reservationRepository, CityRepository cityRepository, CategoryRepository categoryRepository, CustomerRepository customerRepository, ReservationService reservationService) {
+	public ReservationController(ReservationRepository reservationRepository, CityRepository cityRepository, ReservationService reservationService) {
 		super();
 		this.reservationRepository = reservationRepository;
 		this.cityRepository = cityRepository;
-		this.categoryRepository = categoryRepository;
-		this.customerRepository = customerRepository;
 		this.reservationService = reservationService;
 	}
 
@@ -59,9 +55,8 @@ public class ReservationController {
 	 * @throws CustomerNotFoundException		Cannot find the anonymous customer
 	 */
 	@PostMapping("/reservations")
-	public ResponseEntity<ReservationDto> startReservation(@RequestBody CreateReservationDto payload) throws URISyntaxException, CityNotFoundException, CategoryNotFoundException, CategoryTypeNotFoundException, CategoryUnavailableException, CustomerNotFoundException {
+	public ResponseEntity<ReservationDto> startReservation(@RequestBody CreateReservationDto payload) throws CityNotFoundException, CategoryTypeNotFoundException, ReservationException, CustomerNotFoundException, CategoryNotFoundException {
 
-		// TODO: Think about: 1. Controllers execute services. Services play with Domain Models and store results
 		City pickupLocation = cityRepository.findByNameAndCountryCode(payload.getOrigin())
 								 .orElseThrow(() -> new CityNotFoundException(String.format("Origin city %s not found", payload.getOrigin())));
 		City dropOffLocation = cityRepository.findByNameAndCountryCode(payload.getDestiny())
@@ -73,24 +68,22 @@ public class ReservationController {
 		LocalDateTime start = LocalDateTime.parse(payload.getStart(), dateTimeFormatter);
 		LocalDateTime finish = LocalDateTime.parse(payload.getFinish(), dateTimeFormatter);
 
-		if (start.isAfter(finish)) {
-			throw new RuntimeException("Start date should be earlier than the end date");
+		try {
+
+			// Start a new reservation based on the chosen category
+			Reservation reservation = reservationService.startReservationAnonymously(type, pickupLocation, start, dropOffLocation, finish);
+
+			return ResponseEntity.created(new URI(String.format("/reservations/%s", reservation.getReservationNumber())))
+					.body(ReservationDto.basedOn(reservation));
+
+		} catch (CarRentalException e) {
+			throw e;
+		} catch (Exception e) {
+			// Logs detailed, technical information
+			e.printStackTrace();
+			// Returns only message to the api client
+			throw new ReservationException("Failure starting reservation. Please try again");
 		}
-
-		CategoryAvailability chosenCategory = categoryRepository.getCategoryAvailabilityFor(type, pickupLocation, start, dropOffLocation, finish)
-				.orElseThrow(CategoryNotFoundException::new);
-
-		// TODO: Support logged in user/customer?
-		Customer visitor = customerRepository.getAnonymousCustomer();
-
-		// Start a new reservation based on the chosen category
-		// TODO: Better define Aggregate
-		Reservation reservation = chosenCategory.reserveFor(visitor);
-
-		reservationRepository.save(reservation);
-		
-		return ResponseEntity.created(new URI(String.format("/reservations/%s", reservation.getReservationNumber())))
-							 .body(ReservationDto.basedOn(reservation));
 	}
 	
 	@GetMapping("/reservations/{reservationNumber}")
@@ -105,33 +98,49 @@ public class ReservationController {
 	@PutMapping("/reservations/{reservationNumber}/extras")
 	public ResponseEntity<ReservationDto> setReservationExtras(@PathVariable String reservationNumber, @RequestBody ExtraProduct[] extras) throws ReservationException {
 		ReservationNumber id = ReservationNumber.of(reservationNumber);
-		Reservation original = reservationRepository.findById(id)
+		Reservation reservation = reservationRepository.findById(id)
 				.orElseThrow(() -> new ReservationNotFoundException(id));
+		try {
 
-		original.replaceExtraProductsWith(extras);
-		
-		reservationRepository.save(original);
-		
-		return ResponseEntity.ok(ReservationDto.basedOn(original));
+			reservation.replaceExtraProductsWith(extras);
+
+			reservationRepository.save(reservation);
+
+			return ResponseEntity.ok(ReservationDto.basedOn(reservation));
+
+		} catch (Exception e) {
+			// Logs detailed, technical information
+			e.printStackTrace();
+			// Returns only message to the api client
+			throw new ReservationException("Failure setting reservation's extra products. Please try again");
+		}
 	}
 	
 	@PutMapping("/reservations/{reservationNumber}/insurance/{insuranceType}")
-	public ResponseEntity<ReservationDto> setReservationInsurance(@PathVariable String reservationNumber, @PathVariable InsuranceType insuranceType) throws ReservationNotFoundException {
+	public ResponseEntity<ReservationDto> setReservationInsurance(@PathVariable String reservationNumber, @PathVariable InsuranceType insuranceType) throws ReservationException {
 		ReservationNumber id = ReservationNumber.of(reservationNumber);
 		Reservation original = reservationRepository.findById(id)
 				.orElseThrow(() -> new ReservationNotFoundException(id));
-		
-		original.setInsurance(insuranceType);
-		
-		reservationRepository.save(original);
-		
-		return ResponseEntity.ok(ReservationDto.basedOn(original));
+		try {
+
+			original.setInsuranceType(insuranceType);
+
+			reservationRepository.save(original);
+
+			return ResponseEntity.ok(ReservationDto.basedOn(original));
+
+		} catch (Exception e) {
+			// Logs detailed, technical information
+			e.printStackTrace();
+			// Returns only message to the api client
+			throw new ReservationException("Failure setting reservation's insurance type. Please try again");
+		}
 	}
 	
 	@PutMapping("/reservations/{reservationNumber}/customer-details")
 	public ResponseEntity<ReservationDto> setReservationCustomerDetails(@PathVariable String reservationNumber, @RequestBody CustomerDto customerData) throws CityNotFoundException, ReservationException, CustomerException {
 		ReservationNumber id = ReservationNumber.of(reservationNumber);
-		Reservation original = reservationRepository.findById(id)
+		Reservation reservation = reservationRepository.findById(id)
 				.orElseThrow(() -> new ReservationNotFoundException(id));
 
 		if (customerData.getCity() == null) {
@@ -140,26 +149,20 @@ public class ReservationController {
 		City customerCity = cityRepository.findByNameAndCountryCode(customerData.getCity().toString())
 				.orElseThrow(() -> new CityNotFoundException(String.format("Customer city '%s' not found", customerData.getCity())));
 
-		if (original.getCustomer().isAnonymous()) {
-			original.setCustomer(
-					new Customer.Builder()
-							.withFullName(customerData.getFullName())
-							.withEmail(customerData.getEmail())
-							.withPhoneNumber(customerData.getPhoneNumber())
-							.withAddress(customerData.getAddress())
-							.withCity(customerCity)
-							.build());
-		} else {
-			original.getCustomer().setFullName(customerData.getFullName());
-			original.getCustomer().setEmail(customerData.getEmail());
-			original.getCustomer().setPhoneNumber(customerData.getPhoneNumber());
-			original.getCustomer().setAddress(customerData.getAddress());
-			original.getCustomer().setCity(customerCity);
-		}
+		try {
 
-		reservationRepository.save(original);
-		
-		return ResponseEntity.ok(ReservationDto.basedOn(original));
+			reservationService.setCustomer(reservation, customerData.getFullName(), customerData.getEmail(), customerData.getPhoneNumber(), customerData.getAddress(), customerCity);
+
+			return ResponseEntity.ok(ReservationDto.basedOn(reservation));
+
+		} catch (CarRentalException e) {
+			throw e;
+		} catch (Exception e) {
+			// Logs detailed, technical information
+			e.printStackTrace();
+			// Returns only message to the api client
+			throw new ReservationException("Failure starting reservation. Please try again");
+		}
 	}
 
 	@PutMapping("/reservations/{reservationNumber}/confirm")
@@ -169,9 +172,7 @@ public class ReservationController {
 				.orElseThrow(() -> new ReservationNotFoundException(id));
 		try {
 
-			OrderId orderId = reservation.confirm(reservationService.confirm());
-
-			reservationRepository.save(reservation);
+			OrderId orderId = reservationService.confirm(reservation);
 
 			return ResponseEntity.accepted().body(orderId);
 

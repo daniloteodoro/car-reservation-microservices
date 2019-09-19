@@ -8,12 +8,12 @@ import java.util.Optional;
 
 public interface CategoryRepository {
 	
-	List<Category> findAll();
+	List<CategoryPricing> findAll();
 	
-	Optional<Category> findById(CategoryType categoryType);
+	Optional<CategoryPricing> findById(CategoryType categoryType);
 
-	List<CategoryAvailability> getCategoryAvailabilities(City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime);
+	List<Category> getCategoryAvailabilities(City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime);
 
-	Optional<CategoryAvailability> getCategoryAvailabilityFor(CategoryType type, City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime);
+	Optional<Category> getCategoryAvailabilityFor(CategoryType type, City pickupLocation, LocalDateTime pickupDateTime, City dropOffLocation, LocalDateTime dropOffDateTime);
 
 }
